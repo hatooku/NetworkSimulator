@@ -1,12 +1,9 @@
 class Flow(object):
-    """ A flow class that represents active connections between
+    """A flow class that represents active connections between
     hosts and routers.
 
-    Args:
-        ns (NetworkSimulator): Instance of the NetworkSimulator class
-        flow_id (int): Unique id identifying the flow
-
     Attributes:
+        ns (NetworkSimulator): Instance of the NetworkSimulator class
         flow_id (int): Unique id identifying the flow
         src (Node): The flow's source node
         dest (Node): The flow's destination node
