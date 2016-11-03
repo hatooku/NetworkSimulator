@@ -1,33 +1,28 @@
 from collections import deque
-'''
-   Class for a link.
-   
-   Attributes:
-   link_id is a unique identifier for each link
-   max_buffer_size is how much data can be stored in the link buffer
-   delay is propogation delay of the link
-   capacity is the maximum link rate
-   nodes is an array of the 2 nodes connected with this link
-   
-   link_buffer stores packets that are waiting to be sent on this link
-   
-   current_packet stores the packet being sent on the link.
-   current_destination stores which host this packet is being sent to.
-   '''   
+
 
 class Link(object):
-    '''
-    Constructor for Link class takes the aformentioned 
-    link_id,
-    max_buffer_size,
-    delay,
-    capacity,
-    nodes'''    
-    def __init__ (self, link_id, max_buffer_size, delay, capacity, nodes):
+    """A link which connects new nodes in the graph.
+       
+    Attributes:
+        ns (NetworkSimulator): stores the simulator class running the simulation
+        link_id (int): a unique identifier for each link
+        max_buffer_size (int): how many bits can be stored in the link buffer
+        prop_delay (float): propogation delay of the link in ms
+        capacity (float): the maximum link rate in bits / ms
+        nodes (array): an array of the 2 nodes connected with this link
+    
+        link_buffer (Deque) stores packets waiting to be sent on this link
+    
+        cur_packet (Packet) stores the packet being sent on the link
+        cur_destination (Node) stores where to send this packet """
+
+    def __init__ (self, ns, link_id, max_buffer_size, prop_delay, capacity, nodes):
+        self._ns = ns
         self._link_id = link_id
         self._max_buffer_size = max_buffer_size
 
-        self._delay = delay
+        self._prop_delay = prop_delay
         self._capacity = capacity
         
         if(len(nodes) != 2):
@@ -35,9 +30,18 @@ class Link(object):
         self.nodes = nodes
         
         self.link_buffer = deque()
-        self._current_packet = None
-        self._current_direction = None
+        self._cur_packet = None
+        self._cur_direction = None
         
+        
+    @property
+    def ns(self):
+        return self._ns
+       
+    @ns.setter
+    def ns(self, value):
+        raise AttributeError("Cannot modify network simulator")
+    
         
     @property
     def link_id(self):
@@ -45,7 +49,7 @@ class Link(object):
     
     @link_id.setter
     def link_id(self, value):
-        raise AttributeError("Can not modify link id")
+        raise AttributeError("Cannot modify link id")
     
     @property
     def max_buffer_size(self):
@@ -53,23 +57,23 @@ class Link(object):
     
     @max_buffer_size.setter
     def max_buffer_size(self, value):
-        raise AttributeError("Can not modify link's maximum buffer size")
+        raise AttributeError("Cannot modify link's maximum buffer size")
     
     @property
-    def delay(self):
-        return self._delay
+    def prop_delay(self):
+        return self._prop_delay
     
-    @delay.setter
-    def delay(self, value):
-        raise AttributeError("Can not modify link's delay")
+    @prop_delay.setter
+    def prop_delay(self, value):
+        raise AttributeError("Cannot modify link's prop_delay")
         
     @property
     def capacity(self):
-        return self._delay    
+        return self._capacity  
     
     @capacity.setter
     def capacity(self, value):
-        raise AttributeError("Can not modify link's capacity")
+        raise AttributeError("Cannot modify link's capacity")
     
     @property
     def direction(self):
@@ -77,39 +81,49 @@ class Link(object):
     
     @direction.setter
     def direction(self, value):
-        self._direction = direction
+        self._direction = value
     
     @property
-    def current_packet(self):
-        return self._current_packet
+    def cur_packet(self):
+        return self._cur_packet
     
-    @current_packet.setter
-    def current_packet(self, value):
+    @cur_packet.setter
+    def cur_packet(self, value):
         raise AttributeError("Current packet should not be changed externally")
     
     @property
-    def current_destination(self):
-        return self._current_destination
+    def cur_destination(self):
+        return self._cur_destination
     
-    @current_packet.setter
-    def current_destination(self, value):
-        raise AttributeError("Current destination can not be changed externally")    
- 
- 
+    @cur_packet.setter
+    def cur_destination(self, value):
+        raise AttributeError("Current destination cannot be changed externally")    
     
     
-    ''' Puts the packet in the packet buffer to be sent to to the host with the
-    opposite id. If no packet is being sent, calls the send_packet function'''
     def add_packet(self, packet, host_id):
+        """ Add a packet to be sent
+        
+        Puts the packet in the packet buffer to be sent to to the host with the
+        other id. If no packet is being sent, calls the send_packet function
+        
+        Args:
+            packet (Packet) the packet being sent
+            host_id (int) the id of the host sending the packet """        
         pass
     
     ''' Begins transfering the packet. '''
     def start_packet_trasfer(self):
+        """ Send a packet
         
-        pass
-    
-    ''' When this event is called, the packet will be transfered to the host of 
-        its destination. If there is another packet to be sent in the queue,
-        send that packet '''
+        Takes a packet out of the buffer and begins sending it to the correct
+        host. Sets the current packet and current destination of the link. """
+   
     def finish_packet_transfer(self):
+        """ Hand off the packet it to the Node it was going to. 
+        
+        When this method is called, the packet will be transfered to the 
+        correct node. If there is another packet in the buffer that needs to be
+        sent, the start_packet_transfer function will be called and another
+        packet will be sent. """
+        
         pass
