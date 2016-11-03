@@ -17,18 +17,12 @@ class Flow(object):
 
     """
 
-    def __init__(self, ns, flow_id, src, dest, data_amount=0, window_size=max.int, unacknowledged_packets=[],
-    current_packet=0, num_packets=0, last_acknowledged=0):
+    def __init__(self, ns, flow_id, src, dest, data_amount):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
         self._dest = dest
         self.data_amount = data_amount
-        self.window_size = window_size
-        self.unacknowledged_packets = unacknowledged_packets
-        self.current_packet = current_packet
-        self.num_packets = num_packets
-        self.last_acknowledged = last_acknowledged
 
     @property
     def flow_id(self):
@@ -74,3 +68,6 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
         """
         pass
+
+self.last_acknowledged = -1
+self.num_packets = 0
