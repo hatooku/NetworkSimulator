@@ -23,6 +23,8 @@ class Flow(object):
         self._src = src
         self._dest = dest
         self.data_amount = data_amount
+        self.last_acknowledged = -1
+        self.num_packets = 0
 
     @property
     def flow_id(self):
@@ -68,6 +70,3 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
         """
         pass
-
-self.last_acknowledged = -1
-self.num_packets = 0
