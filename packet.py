@@ -24,7 +24,7 @@ class Packet(object):
 
     @packet_id.setter
     def packet_id(self, packet_id):
-        raise AttributeError("Error: Can't change id of a packet.")
+        raise AttributeError("Cannot modify id of a packet.")
 
     @property
     def src(self):
@@ -32,7 +32,7 @@ class Packet(object):
 
     @src.setter
     def src(self, src):
-        raise AttributeError("Error: Can't change a packet's source node.")
+        raise AttributeError("Cannot modify a packet's source node.")
 
     @property
     def dest(self):
@@ -40,7 +40,7 @@ class Packet(object):
 
     @dest.setter
     def dest(self, dest):
-        raise AttributeError("Error: Can't change a packet's destination node.")
+        raise AttributeError("Cannot modify a packet's destination node.")
 
     @property
     def data(self):

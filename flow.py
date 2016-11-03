@@ -36,15 +36,15 @@ class Flow(object):
 
     @flow_id.setter
     def flow_id(self, flow_id):
-        raise AttributeError("Error: Can't change id of a flow.")
+        raise AttributeError("Cannot modify id of a flow.")
 
     @property
     def src(self):
-        return src
+        return self._src
 
     @src.setter
     def src(self, src):
-        raise AttributeError("Error: Can't change a flow's source node.")
+        raise AttributeError("Cannot modify a flow's source node.")
 
     @property
     def dest(self):
@@ -52,7 +52,7 @@ class Flow(object):
 
     @dest.setter
     def dest(self, dest):
-        raise AttributError("Error: Can't change a flow's destination node.")
+        raise AttributError("Cannot modify a flow's destination node.")
 
     @property
     def data_amount(self):
@@ -60,7 +60,7 @@ class Flow(object):
 
     @data_amount.setter
     def data_amount(self, data_amount):
-        pass
+        self.data_amount = data_amount
 
     @property
     def window_size(self):
@@ -68,7 +68,7 @@ class Flow(object):
 
     @window_size.setter
     def window_size(self, window_size):
-        pass
+        self.window_size = window_size
 
     @property
     def unacknowledged_packets(self):
@@ -76,7 +76,7 @@ class Flow(object):
 
     @unacknowledged_packets.setter
     def unacknowledged_packets(self, unacknowledged_packets):
-        pass
+        self.unacknowledged_packets = unacknowledged_packets
 
     @property
     def current_packet(self):
@@ -84,7 +84,7 @@ class Flow(object):
 
     @current_packet.setter
     def current_packet(self, current_packet):
-        pass
+        self.current_packet = current_packet
 
     @property
     def num_packets(self):
@@ -92,7 +92,7 @@ class Flow(object):
 
     @num_packets.setter
     def num_packets(self, num_packets):
-        pass
+        self.num_packets = num_packets
 
     @property
     def last_acknowledged(self):
@@ -100,7 +100,7 @@ class Flow(object):
 
     @current_packet.setter
     def last_acknowledged(self, last_acknowledged):
-        pass
+        self.last_acknowledged = last_acknowledged
 
     def make_packet(self, id, src, dest, data):
         """Method makes the packet and triggers the send_packet method for the
