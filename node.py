@@ -1,15 +1,18 @@
+import abc
+
 class Node(object):
     """A node class that will be the parent of the hosts and routers.
 
-    Args:
-        ns: An instance of the NetworkSimulator class.
-        node_id: The network address of the host or router.
-
     Attributes:
-        ns: An instance of the NetworkSimulator class.
-        node_id: The network address of the host or router.
+        ns (NetworkSimulator): An instance of the NetworkSimulator class.
+        node_id (int): The network address of the host or router.
 
     """
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, ns, node_id):
+        self.ns = ns
+        self._node_id = node_id
 
     @property
     def node_id(self):
@@ -19,26 +22,24 @@ class Node(object):
     def node_id(self, value):
         raise AttributeError("Cannot modify network address")
 
-    def __init__(self, ns, node_id):
-        self.ns = ns
-        self._node_id = node_id
-
+    @abc.abstractmethod
     def send_packet(self, packet):
         """Sends a packet to another node. Must be implemented by host or
         router.
 
         Args:
-            packet: The packet to send.
+            packet (Packet): The packet to send.
 
         """
-        pass
+        return
 
+    @abc.abstractmethod
     def receive_packet(self, packet):
         """Receives a packet from another node. Must be implemented by host or
         router.
 
         Args:
-            packet: The packet we received.
+            packet (Packet): The packet we received.
             
         """
-        pass
+        return
