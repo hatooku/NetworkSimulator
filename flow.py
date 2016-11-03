@@ -1,3 +1,5 @@
+import sys
+
 class Flow(object):
     """A flow class that represents active connections between
     hosts and routers.
@@ -24,7 +26,7 @@ class Flow(object):
         self._dest = dest
         self.data_amount = data_amount
 
-        self.window_size = 1
+        self.window_size = sys.maxint
         self.unacknowledged_packets = -1
         self.current_packet  = -1
         self.num_packets = 0
