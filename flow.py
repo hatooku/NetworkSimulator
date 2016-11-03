@@ -24,6 +24,7 @@ class Flow(object):
         self._dest = dest
         self.data_amount = data_amount
 
+        self.window_size = 1
         self.unacknowledged_packets = -1
         self.current_packet  = -1
         self.num_packets = 0
