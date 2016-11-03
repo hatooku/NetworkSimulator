@@ -23,8 +23,12 @@ class Flow(object):
         self._src = src
         self._dest = dest
         self.data_amount = data_amount
-        self.last_acknowledged = -1
+
+        self.unacknowledged_packets = -1
+        self.current_packet  = -1
         self.num_packets = 0
+        self.last_acknowledged = -1
+
 
     @property
     def flow_id(self):
