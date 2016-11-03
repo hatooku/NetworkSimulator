@@ -48,59 +48,11 @@ class Flow(object):
 
     @property
     def dest(self):
-        pass
+        return self._dest
 
     @dest.setter
     def dest(self, dest):
         raise AttributError("Cannot modify a flow's destination node.")
-
-    @property
-    def data_amount(self):
-        pass
-
-    @data_amount.setter
-    def data_amount(self, data_amount):
-        self.data_amount = data_amount
-
-    @property
-    def window_size(self):
-        pass
-
-    @window_size.setter
-    def window_size(self, window_size):
-        self.window_size = window_size
-
-    @property
-    def unacknowledged_packets(self):
-        pass
-
-    @unacknowledged_packets.setter
-    def unacknowledged_packets(self, unacknowledged_packets):
-        self.unacknowledged_packets = unacknowledged_packets
-
-    @property
-    def current_packet(self):
-        pass
-
-    @current_packet.setter
-    def current_packet(self, current_packet):
-        self.current_packet = current_packet
-
-    @property
-    def num_packets(self):
-        pass
-
-    @num_packets.setter
-    def num_packets(self, num_packets):
-        self.num_packets = num_packets
-
-    @property
-    def last_acknowledged(self):
-        pass
-
-    @current_packet.setter
-    def last_acknowledged(self, last_acknowledged):
-        self.last_acknowledged = last_acknowledged
 
     def make_packet(self, id, src, dest, data):
         """Method makes the packet and triggers the send_packet method for the

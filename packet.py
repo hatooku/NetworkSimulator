@@ -20,7 +20,7 @@ class Packet(object):
 
     @property
     def packet_id(self):
-        return self.packet_id
+        return self._packet_id
 
     @packet_id.setter
     def packet_id(self, packet_id):
@@ -28,7 +28,7 @@ class Packet(object):
 
     @property
     def src(self):
-        pass
+        return self._src
 
     @src.setter
     def src(self, src):
@@ -36,16 +36,8 @@ class Packet(object):
 
     @property
     def dest(self):
-        pass
+        return self._dest
 
     @dest.setter
     def dest(self, dest):
         raise AttributeError("Cannot modify a packet's destination node.")
-
-    @property
-    def data(self):
-        pass
-
-    @data.setter
-    def data(self, data):
-        pass
