@@ -3,16 +3,11 @@ from node import Node
 class Router(Node):
     """A class that will represent routers.
 
-    Args:
-        ns: An instance of the NetworkSimulator class.
-        node_id: The network address of the router.
-        links: The links that the router is connected to.
-
     Attributes:
-        ns: An instance of the NetworkSimulator class.
-        node_id: The network address of the router.
-        links: The links that the router is connected to.
-        routing_table: The routing table for the router.
+        ns (NetworkSimulator): An instance of the NetworkSimulator class.
+        node_id (int): The network address of the router.
+        links (Link []): The links that the router is connected to.
+        routing_table (dict): The routing table for the router.
 
     """
 
@@ -25,7 +20,7 @@ class Router(Node):
         """Sends a packet to another node.
 
         Args:
-            packet: The packet to send.
+            packet (Packet): The packet to send.
 
         """
         pass
@@ -33,8 +28,11 @@ class Router(Node):
     def receive_packet(self, packet):
         """Receives a packet from another node.
 
+        If the packet needs to be sent to another node, this method will call
+        send_packet().
+
         Args:
-            packet: The packet we received.
+            packet (Packet): The packet we received.
 
         """
         pass
