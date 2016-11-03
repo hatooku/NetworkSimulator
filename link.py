@@ -1,6 +1,5 @@
 from collections import deque
 
-
 class Link(object):
     """A link which connects new nodes in the graph.
        
@@ -121,7 +120,6 @@ class Link(object):
         correct node. If there is another packet in the buffer that needs to be
         sent, the start_packet_transfer function will be called and another
         packet will be sent.
-        
         
         """  
         pass
