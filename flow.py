@@ -3,23 +3,35 @@ class Flow(object):
     hosts and routers.
 
     Args:
-        ns: Instance of the NetworkSimulator class
-        flow_id: Unique id identifying the flow
+        ns (NetworkSimulator): Instance of the NetworkSimulator class
+        flow_id (int): Unique id identifying the flow
 
     Attributes:
-        flow_id: Unique id identifying the flow
-        src: The flow's source node
-        dest: The flow's destination node
-        data_amount: Data capacity of the flow
+        flow_id (int): Unique id identifying the flow
+        src (Node): The flow's source node
+        dest (Node): The flow's destination node
+        data_amount (int): Data capacity of the flow
 
-        window_size: The size of the window
-        unacknowledged_packets: The list of packets with no acknowledgement
-        current_packet: The current packet in the flow
-        num_packets:  The number of packets that have been through the flow
-        last_acknowledged: The last acknowledged packet in the flow
+        window_size (int): The size of the window
+        unacknowledged_packets (dict): The list of packets with no acknowledgement
+        current_packet (Packet): The current packet in the flow
+        num_packets (int):  The number of packets that has been sent so far
+        last_acknowledged (Packet): The last acknowledged packet in the flow
+
     """
-    def __init__(self, ns, flow_id):
+
+    def __init__(self, ns, flow_id, src, dest, data_amount=0, window_size=0, unacknowledged_packets=[],
+    current_packet=0, num_packets=0, last_acknowledged=0):
+        self.ns = ns
         self._flow_id = flow_id
+        self._src = src
+        self._dest = dest
+        self.data_amount = data_amount
+        self.window_size
+        self.unacknowledged_packets = unacknowledged_packets
+        self.current_packet = current_packet
+        self.num_packets = num_packets
+        self.last_acknowledged
 
     @property
     def flow_id(self):
@@ -27,15 +39,15 @@ class Flow(object):
 
     @flow_id.setter
     def flow_id(self, flow_id):
-        raise Exception("Error: Can't change id of a flow.")
+        raise AttributeError("Error: Can't change id of a flow.")
 
     @property
     def src(self):
-        return id
+        return src
 
     @src.setter
     def src(self, src):
-        pass
+        raise AttributeError("Error: Can't change a flow's source node.")
 
     @property
     def dest(self):
@@ -43,7 +55,7 @@ class Flow(object):
 
     @dest.setter
     def dest(self, dest):
-        pass
+        raise AttributError("Error: Can't change a flow's destination node.")
 
     @property
     def data_amount(self):
@@ -66,7 +78,7 @@ class Flow(object):
         pass
 
     @unacknowledged_packets.setter
-    def dest(self, unacknowledged_packets):
+    def unacknowledged_packets(self, unacknowledged_packets):
         pass
 
     @property
@@ -74,7 +86,7 @@ class Flow(object):
         pass
 
     @current_packet.setter
-    def current_packet(self, dest):
+    def current_packet(self, current_packet):
         pass
 
     @property
@@ -94,29 +106,22 @@ class Flow(object):
         pass
 
     def make_packet(self, id, src, dest, data):
-        """Method makes and returns packet
+        """Method makes the packet and triggers the send_packet method for the
+        host if applicable
 
         Args:
-            id: The unique id identifying the packet
-            src: The packet's source node
-            dest: The packet's destination node
-            data: The data in the packet
-
-        Returns:
-            A packet with the given input arguments.  Triggers the send_packet
-            function for the host if applicable
+            id (int): The unique id identifying the packet
+            src (Node): The packet's source node
+            dest (Node): The packet's destination node
+            data (any datatype): The data in the packet
         """
         pass
 
     def acknowledge(self, packet):
-        """Method that acknowledges a packet and sends it if applicable
+        """Method that triggers the send_packet function for the host if
+        applicable by sending the acknowledgement packet
 
         Args:
-            packet: The packet attempting to be acknowledged
-
-        Returns:
-            Triggers the send_packet function for the host if applicable
+            packet (Packet): The packet attempting to be acknowledged
         """
         pass
-
-p = Flow(13, 12)
