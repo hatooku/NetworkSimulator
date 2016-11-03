@@ -12,10 +12,12 @@ class Link(object):
         capacity (float): the maximum link rate in bits / ms
         nodes (array): an array of the 2 nodes connected with this link
     
-        link_buffer (Deque) stores packets waiting to be sent on this link
+        link_buffer (Deque): stores packets waiting to be sent on this link
     
-        cur_packet (Packet) stores the packet being sent on the link
-        cur_destination (Node) stores where to send this packet """
+        cur_packet (Packet): stores the packet being sent on the link
+        cur_destination (Node): stores where to send this packet
+        
+    """
 
     def __init__ (self, ns, link_id, max_buffer_size, prop_delay, capacity, nodes):
         self._ns = ns
@@ -25,23 +27,13 @@ class Link(object):
         self._prop_delay = prop_delay
         self._capacity = capacity
         
-        if(len(nodes) != 2):
+        if len(nodes) != 2:
             raise AttributeError("Node array should contain two nodes")
         self.nodes = nodes
         
         self.link_buffer = deque()
         self._cur_packet = None
         self._cur_direction = None
-        
-        
-    @property
-    def ns(self):
-        return self._ns
-       
-    @ns.setter
-    def ns(self, value):
-        raise AttributeError("Cannot modify network simulator")
-    
         
     @property
     def link_id(self):
@@ -101,29 +93,35 @@ class Link(object):
     
     
     def add_packet(self, packet, host_id):
-        """ Add a packet to be sent
+        """Add a packet to be sent
         
         Puts the packet in the packet buffer to be sent to to the host with the
-        other id. If no packet is being sent, calls the send_packet function
+        other id. If no packet is being sent, calls the start_packet_transfer
         
         Args:
-            packet (Packet) the packet being sent
-            host_id (int) the id of the host sending the packet """        
+            packet (Packet): the packet being sent
+            host_id (int): the id of the host sending the packet 
+            
+        """        
         pass
     
-    ''' Begins transfering the packet. '''
+    
     def start_packet_trasfer(self):
-        """ Send a packet
+        """Send a packet
         
         Takes a packet out of the buffer and begins sending it to the correct
-        host. Sets the current packet and current destination of the link. """
+        host. Sets the current packet and current destination of the link. 
+        
+        """
    
     def finish_packet_transfer(self):
-        """ Hand off the packet it to the Node it was going to. 
+        """Hand off the packet it to the Node it was going to. 
         
         When this method is called, the packet will be transfered to the 
         correct node. If there is another packet in the buffer that needs to be
         sent, the start_packet_transfer function will be called and another
-        packet will be sent. """
+        packet will be sent.
         
+        
+        """  
         pass
