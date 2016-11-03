@@ -11,10 +11,10 @@ class NetworkSimulator(object):
     which contains all the data obtained by the simulator.
 
     Attributes:
-        flows (dict): all flows with their id's as the keys
-        links (dict): all links with their id's as the keys
-        routers (dict): all routers with their id's as the keys
-        hosts (dict): all hosts with their id's as the keys
+        flows (dict): all flows with their ids as the keys
+        links (dict): all links with their ids as the keys
+        routers (dict): all routers with their ids as the keys
+        hosts (dict): all hosts with their ids as the keys
         pq (arr): a heapq priority queue whose elements are a tuple in the
             form (execution_time, event_id, f) where f is the function to be
             run
@@ -57,8 +57,6 @@ class NetworkSimulator(object):
     def add_flow(self):
         """Adds a new flow to the network.
 
-        num_active_flows is initialized to the number of flows.
-
         Args:
             ...
 
@@ -94,14 +92,16 @@ class NetworkSimulator(object):
     def populate(self, network_description):
         """Populates a new network given a network description in JSON form.
 
+        num_active_flows is set to the number of flows.
+
         Args:
-            network_description (str): name of the json file containg the
+            network_description (str): name of the json file containing the
                 network description
 
         """
         pass
 
-    def run(self, duration=sys.maxint):
+    def run(self, duration=sys.float_info.max):
         """Runs the simulation for the given duration.
         
         Args:
@@ -111,13 +111,13 @@ class NetworkSimulator(object):
         """
         pass
 
-    def add_event(self, f, time=None):
+    def add_event(self, f, delay=0.0):
         """Adds an event to the priority queue.
 
         Args:
-            f (func): The function to be run during this event.
-            time (float): The time at which the event should be executed. If
-                not specified, time is set to the current time.
+            f (func): the function to be run during this event.
+            delay (float): the delay from the current time at which this event
+                should be executed.
 
         """
         pass
