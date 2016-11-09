@@ -1,0 +1,35 @@
+{
+    "network": {
+        "hosts": [
+            {
+                "id": "H1",
+                "link": 1
+            },
+            {
+                "id": "H2",
+                "link": 1
+            }
+        ],
+        "links": [
+            {
+                "id": "L1",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "H1",
+                    "H2"
+                ]
+            }
+        ],
+        "flows": [
+            {
+                "id": "F1",
+                "src": "H1",
+                "dest": "H2",
+                "data_amt": 20,
+                "starting_time": 1.0
+            }
+        ]
+    }
+}
