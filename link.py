@@ -93,13 +93,13 @@ class Link(object):
     def add_packet(self, packet, node_id):
         """Add a packet to be sent
         
-        Puts the packet in the packet buffer to be sent to to the host with the
+        Puts the packet in the packet buffer to be sent to to the node with the
         other id. If no packet is being sent, calls the start_packet_transfer.
         If the buffer is full, the packet is dropped.
         
         Args:
             packet (Packet): the packet being sent
-            node_id (string): the id of the host sending the packet 
+            node_id (string): the id of the node sending the packet 
             
         """  
         
@@ -110,8 +110,8 @@ class Link(object):
             elif node_id == self.nodes[1].node_id:
                 destination = nodes[0]
             else:
-                raise Exception("This link is not connected to host with \
-                host_id %s" % node_id)
+                raise Exception("This link is not connected to node with \
+                node_id %s" % node_id)
             
             self.link_buffer.append((packet, destination))
             self.cur_buffer_size += packet.packet_size
@@ -127,7 +127,7 @@ class Link(object):
         """Send a packet
         
         Takes a packet out of the buffer and begins sending it to the correct
-        host. Sets the current packet and current destination of the link. 
+        node. Sets the current packet and current destination of the link. 
         
         """
         assert self.cur_destination == None
@@ -158,8 +158,8 @@ class Link(object):
         event = lambda: self.cur_destination.recieve_packet(self.cur_packet)
         self.ns.add_event(event, 0.0)
         
-        print "Link %s finishing transfering packet %s. Handing to host %s" \
-        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.host_id)        
+        print "Link %s finishing transfering packet %s. Handing to node %s" \
+        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id)        
         
         self.cur_packet = None
         self.cur_destination = None
