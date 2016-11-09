@@ -35,7 +35,7 @@ class Flow(object):
 
     @property
     def flow_id(self):
-        return self.flow_id
+        return self._flow_id
 
     @flow_id.setter
     def flow_id(self, flow_id):
