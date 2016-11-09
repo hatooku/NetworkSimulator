@@ -5,7 +5,7 @@ class Node(object):
 
     Attributes:
         ns (NetworkSimulator): An instance of the NetworkSimulator class.
-        node_id (int): The network address of the host or router.
+        node_id (string): The network address of the host or router.
 
     """
     __metaclass__ = abc.ABCMeta
@@ -20,7 +20,17 @@ class Node(object):
 
     @node_id.setter
     def node_id(self, value):
-        raise AttributeError("Cannot modify network address")
+        raise AttributeError("Cannot modify node id")
+
+    @abc.abstractmethod
+    def add_link(self, link):
+        """Add a link to the node.
+
+        Args:
+            link (Link): The link to add.
+
+        """
+        return
 
     @abc.abstractmethod
     def send_packet(self, packet):
