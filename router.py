@@ -11,10 +11,19 @@ class Router(Node):
 
     """
 
-    def __init__(self, ns, node_id, links):
+    def __init__(self, ns, node_id):
         Node.__init__(self, ns, node_id)
-        self.links = links
+        self.links = []
         self.routing_table = {}
+
+    def add_link(self, link):
+        """Add a link to the router.
+
+        Args:
+            link (Link): The link to add.
+
+        """
+        self.links.append(link)
 
     def send_packet(self, packet):
         """Sends a packet to another node.
