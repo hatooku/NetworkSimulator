@@ -4,19 +4,20 @@ class Packet(object):
 
     Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
-        packet_id (int): Unique id identifying the packet
-        src (Node): The packet's source node
-        dest (Node): The packet's destination node
-        data (string): Data string being stored in the packet
-
+        packet_id (string): Unique id identifying the packet
+        src (string): The flow's source node id
+        dest (string): The flow's destination node
+        packet_size (float): The packet's size in bits
+        flow_id (string): Unique id indicating packet
     """
 
-    def __init__(self, ns, packet_id, src, dest, data=""):
+    def __init__(self, ns, packet_id, src, dest, flow_id, packet_size):
         self.ns = ns
         self._packet_id = packet_id
         self._src = src
         self._dest = dest
-        self.data = data
+        self.packet_size = packet_size
+        self.flow_id = flow_id
 
     @property
     def packet_id(self):
