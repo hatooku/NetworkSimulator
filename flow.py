@@ -149,7 +149,7 @@ class Flow(object):
 
         """
         print("Flow ", self.flow_id, ": made acknowledgement packet", packet_id)
-        new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
+        new_packet = AcknowledgementPacket(packet_id, src, dest
             self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
@@ -180,7 +180,7 @@ class Flow(object):
         print("Flow", self.flow_id, ": sending acknowledgement packet",
             packet.packet_id)
         a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
-            packet.dest, packet.packet_size, self.num_packets)
+            packet.dest, packet.packet_size)
 
         event = lambda: self.src.send_packet(packet)
         self.ns.add_event(event)
