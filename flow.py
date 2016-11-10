@@ -86,7 +86,6 @@ class Flow(object):
         """
         self.unacknowledged_packets.remove(a_packet.packet_id)
         self.check_flow_completion()
-        print("Acknowledged packet", a_packet.packet_id, "in flow", self.flow_id)
         self.send_packets()
 
 
@@ -101,7 +100,6 @@ class Flow(object):
         if packet_id in self.unacknowledged_packets:
             self.timed_out_packets.add(packet_id)
             self.unacknowledged_packets.remove(packet_id)
-            print("Packet", packet_id, "timed out in Flow", self.flow_id)
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -131,15 +129,19 @@ class Flow(object):
         new_packet = DataPacket(packet_id, self.src.node_id,
             self.dest.node_id, self.flow_id)
 
-        print("Flow", self.flow_id, ": made data packet", new_packet.packet_id)
 
         self.unacknowledged_packets.add(new_packet.packet_id)
 
         # Adding events to queues
         event1 = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event1, "Sending packet", delay=delay)
+        event1_message = "flow.create_packet: Flow" + str(self.flow_id) + \
+            ": made data packet " + str(new_packet.packet_id)
+        self.ns.add_event(event1, event1_message + s, delay=delay)
+
         event2 = lambda: self.time_out(new_packet.packet_id)
-        self.ns.add_event(event2, "Adding to delay", delay=ACK_DELAY + delay)
+        event2_message = "flow.create_packet: Adding to time_out_packets, packet " + \
+            str(new_packet.packet_id)
+        self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
 
         print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
@@ -159,7 +161,9 @@ class Flow(object):
         new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event, "Adding ack packet")
+        event_message = "flow.make_acknowledgement_packet(): Flow" + \
+            str(self.flow_id) + ": made acknowledgment packet " + str(packet_id)
+        self.ns.add_event(event, event_message)
 
     def receive_packet(self, packet):
         """Method receives a given packet.  If it's a data packet, send an
