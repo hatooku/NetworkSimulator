@@ -87,7 +87,7 @@ class Router(Node):
 
         for node_id, link_info in routing_packet.routing_table.iteritems():
             if node_id not in self.routing_table or 
-            self.routing_table[node_id][1] + cost < link_info[1]:
+            link_info[1] + cost < self.routing_table[node_id][1]:
 
                 self.routing_table[node_id] = (self.links[link_id], 
                     link_info[1] + cost)
