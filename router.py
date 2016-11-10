@@ -1,6 +1,5 @@
 from node import Node
 from routingpacket import RoutingPacket
-from constants import *
 
 class Router(Node):
     """A class that will represent routers.
