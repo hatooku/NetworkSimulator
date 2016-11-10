@@ -10,6 +10,8 @@ from link import Link
 from router import Router
 from datametrics import DataMetrics
 
+VERBOSE = True
+
 class NetworkSimulator(object):
     """The main class for the network simulator.
 
@@ -215,8 +217,6 @@ class NetworkSimulator(object):
 
         print "Network successfully populated."
 
-
-
     def run(self, duration=sys.float_info.max):
         """Runs the simulation for the given duration.
 
@@ -228,8 +228,9 @@ class NetworkSimulator(object):
         while self.pq and self.num_active_flows > 0 and self.cur_time < duration:
             event_time, _, description, f = heapq.heappop(self.pq)
             self.cur_time = event_time
-            print "Time: %f" % self.cur_time
-            print "Description: ", description
+            if VERBOSE:
+                print "Time: %f" % self.cur_time
+                print "Description: ", description
             f()
 
         print "Simulation finished."
@@ -334,8 +335,3 @@ class NetworkSimulator(object):
     def plot_metrics(self):
         """Plots all relevant metrics from DataMetrics."""
         pass
-"""
-from networksimulator import NetworkSimulator
-n = NetworkSimulator()
-n.populate("test1.json")
-"""
