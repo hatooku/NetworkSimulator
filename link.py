@@ -135,7 +135,7 @@ class Link(object):
             
             self.link_buffer.append((packet, destination))
             self.cur_buffer_size += packet.packet_size
-            #self.ns.log_buffer_size(self.link_id, self.cur_buffer_size)
+            self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
             
             if self.cur_packet == None:
                 event = lambda: self.start_packet_transfer()
@@ -143,7 +143,7 @@ class Link(object):
         else:
             print "Link with id %s is full so packet with \
             id %s is dropped" % (self.link_id, packet.packet_id)
-            #self.ns.log_packet_drop(self.link_id)
+            self.ns.record_packet_loss(self.link_id)
     
     def start_packet_transfer(self):
         """Send a packet
@@ -158,7 +158,7 @@ class Link(object):
         
         self.cur_packet, self.cur_destination = self.link_buffer.popleft()
         self.cur_buffer_size -= self.cur_packet.packet_size
-        #self.ns.log_buffer_size(self.link_id, self.cur_buffer_size)
+        self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
         
         trans_delay = self.cur_packet.packet_size / self.capacity
         time_to_pass = self.prop_delay + trans_delay
@@ -183,7 +183,7 @@ class Link(object):
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
         %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id) 
-        #self.ns.log_flow_thing(self.link_id, self.cur_packet.packet_size)
+        self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
         
         self.cur_packet = None
         self.cur_destination = None
