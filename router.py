@@ -40,7 +40,7 @@ class Router(Node):
         """
 
         # Use the routing table to send a packet to the right node
-        link, _ = self.routing_table[packet.dest.node_id]
+        link = self.routing_table[packet.dest.node_id][0]
 
         event = lambda: link.add_packet(packet, self.node_id)
         self.ns.add_event(event)
@@ -65,7 +65,7 @@ class Router(Node):
     def send_routing_packets(self):
         """Sends out the routing table to all of the router's links."""
 
-        for _, link in self.links:
+        for link in self.links.itervalues():
             src = self.node_id
             dest = link.get_other_node_id(self.node_id)
             packet = RoutingPacket(None, src, dest, None, self.routing_table)
@@ -85,11 +85,12 @@ class Router(Node):
         changed = False
         cost = self.links[link_id].prop_delay
 
-        for key, val in routing_packet.routing_table:
-            if key not in self.routing_table or 
-            self.routing_table[key] + cost < val:
+        for node_id, link_info in routing_packet.routing_table.iteritems():
+            if node_id not in self.routing_table or 
+            self.routing_table[node_id][1] + cost < link_info[1]:
 
-                self.routing_table[key] = val + cost
+                self.routing_table[node_id] = (self.links[link_id], 
+                    link_info[1] + cost)
                 changed = True
 
         # If we do update the routing table, send out routing packets
