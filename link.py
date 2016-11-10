@@ -172,7 +172,6 @@ class Link(object):
         time_to_pass = self.prop_delay + trans_delay
         
         event = lambda: self.finish_packet_transfer()
-        print "Link %s beginning to transfer packet %s" \
               %(self.link_id, self.cur_packet.packet_id)
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
                           " link_id = %s" % (self.link_id), time_to_pass)
@@ -193,8 +192,6 @@ class Link(object):
                           "cur_packet = %s, link_id = %s" \
                           % (cur_destination.node_id, cur_packet.packet_id, self.link_id))
         
-        print "Link %s finishing transfering packet %s. Handing to node %s" \
-        %(self.link_id, self.cur_packet.packet_id, self.cur_destination.node_id) 
         self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
         
         self._cur_packet = None
