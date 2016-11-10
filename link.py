@@ -146,6 +146,7 @@ class Link(object):
             self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
             
             if self.cur_packet == None:
+                self._cur_packet, self._cur_destination = self.link_buffer.popleft()
                 event = lambda: self.start_packet_transfer()
                 self.ns.add_event(event, "Link.start_packet_transfer() with"
                           " link_id = %s" % (self.link_id))
@@ -161,11 +162,9 @@ class Link(object):
         node. Sets the current packet and current destination of the link. 
         
         """
-        assert self.cur_destination == None
-        assert self.cur_packet == None 
-        assert len(self.link_buffer) > 0   
+        assert self.cur_destination is not None
+        assert self.cur_packet is not None 
         
-        self._cur_packet, self._cur_destination = self.link_buffer.popleft()
         self._cur_buffer_size -= self.cur_packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
         
@@ -187,11 +186,12 @@ class Link(object):
         packet will be sent.
         
         """
-        x = self.cur_destination
-        event = lambda: x.receive_packet(self.cur_packet, self.link_id)
-        self.ns.add_event(event, "Link.receive_packet() with node_id = %s, "
+        cur_destination = self.cur_destination
+        cur_packet = self.cur_packet
+        event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
+        self.ns.add_event(event, "Host.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
-                          % (x.node_id, self.cur_packet, self.link_id))
+                          % (cur_destination.node_id, cur_packet.packet_id, self.link_id))
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
         %(self.link_id, self.cur_packet.packet_id, self.cur_destination.node_id) 

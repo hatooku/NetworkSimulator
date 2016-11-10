@@ -41,7 +41,7 @@ class Flow(object):
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = window_size
 
-        self.send_packets()
+        self.send_packets(start_time)
 
     @property
     def flow_id(self):
@@ -72,10 +72,11 @@ class Flow(object):
         updates the NetworkSimulator object accordingly.
 
         """
-        if len(self.unacknowledged) == 0 and self.num_packets == self.num_packets_sent:
+        if len(self.unacknowledged_packets) == 0 and \
+            self.num_packets == self.num_packets_sent:
             self.ns.decrement_active_flows()
 
-    def update_flow(a_packet):
+    def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
         attributes
 
@@ -83,9 +84,10 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        self.check_flow_completion()
         self.unacknowledged_packets.remove(a_packet.packet_id)
-        print("Acknowledged packet", packet_id, "in flow", self.flow_id)
+        self.check_flow_completion()
+        print("Acknowledged packet", a_packet.packet_id, "in flow", self.flow_id)
+        self.send_packets()
 
 
     def time_out(self, packet_id):
@@ -96,30 +98,34 @@ class Flow(object):
             packet_id (int): packet_id of packet being added to timed_out_packets
 
         """
-        if packet_id in unacknowledged:
-            timed_out_packets.add(packet_id)
-            unacknowledged_packets.remove(packet_id)
+        if packet_id in self.unacknowledged_packets:
+            self.timed_out_packets.add(packet_id)
+            self.unacknowledged_packets.remove(packet_id)
             print("Packet", packet_id, "timed out in Flow", self.flow_id)
 
-    def send_packets(self):
+    def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
         create_packet function.
 
+        delay (float): delay until sending packets. Should only be used for
+            initial send.
         """
         while (len(self.unacknowledged_packets) < self.window_size):
             if (len(self.timed_out_packets) > 0):
-                self.create_packet(min(timed_out_packets))
+                self.create_packet(min(timed_out_packets), delay)
             else:
-                self.create_packet(self.num_packets_sent)
+                self.create_packet(self.num_packets_sent, delay)
                 self.num_packets_sent += 1
 
-    def create_packet(self, packet_id):
+    def create_packet(self, packet_id, delay=0.0):
         """Method creates packet and then adds them to event queue to be sent
         to the host, and adds a timing event to ensure that they are resent if
         unacknowledged.
 
         Args:
             packet_id (int): Unique id identifying the packet
+            delay (float): delay until sending packet. Should only be used for
+                initial send.
 
         """
         new_packet = DataPacket(packet_id, self.src.node_id,
@@ -131,9 +137,9 @@ class Flow(object):
 
         # Adding events to queues
         event1 = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event1, "Sending packet")
+        self.ns.add_event(event1, "Sending packet", delay=delay)
         event2 = lambda: self.time_out(new_packet.packet_id)
-        self.ns.add_event(event2, "Adding to delay", delay=ACK_DELAY)
+        self.ns.add_event(event2, "Adding to delay", delay=ACK_DELAY + delay)
 
         print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
@@ -177,10 +183,6 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
-        print("Flow", self.flow_id, ": sending acknowledgement packet",
-            packet.packet_id)
-        a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
-            packet.dest, packet.packet_size)
-
-        event = lambda: self.src.send_packet(packet)
-        self.ns.add_event(event, "Adding acknowledgement")
+        print "Flow", self.flow_id, ": sending acknowledgement packet", packet.packet_id
+        self.make_acknowledgement_packet(packet.packet_id,
+            packet.src, packet.dest, packet.packet_size)

@@ -226,13 +226,15 @@ class NetworkSimulator(object):
 
         """
         while self.pq and self.num_active_flows > 0 and self.cur_time < duration:
-            event_time, _, f = heapq.heappop(self.pq)
+            event_time, _, description, f = heapq.heappop(self.pq)
             self.cur_time = event_time
+            print "Time: %f" % self.cur_time
+            print "Description: ", description
             f()
 
         print "Simulation finished."
 
-    def add_event(self, f, description, delay=0.0):
+    def add_event(self, f, description="", delay=0.0):
         """Adds an event to the priority queue.
 
         Args:
@@ -242,7 +244,7 @@ class NetworkSimulator(object):
             description (str): description of the event
 
         """
-        event = (self.cur_time + delay, self.event_counter, f)
+        event = (self.cur_time + delay, self.event_counter, description, f)
         heapq.heappush(self.pq, event)
         self._event_counter += 1
 
