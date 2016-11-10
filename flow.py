@@ -17,8 +17,8 @@ class Flow(object):
         data_amount (float): Data capacity of the flow (bits)
 
         start_time (float): Start time in seconds
-        unacknowledged_packets (dict): The list of packets with no acknowledgement
-        timed_out_packets (dict): The list of packets timed out before acknowledgement
+        unacknowledged_packets (set): The list of packets with no acknowledgement
+        timed_out_packets (set): The list of packets timed out before acknowledgement
         num_packets_sent(float): Number of packets that have been sent through
             the flow
         num_packets (float):  Number of packets to be sent through the flow
@@ -64,7 +64,7 @@ class Flow(object):
 
     @dest.setter
     def dest(self, dest):
-        raise AttributError("Cannot modify a flow's destination node.")
+        raise AttributeError("Cannot modify a flow's destination node.")
 
     def check_flow_completion(self):
         """Method that checks if all packets have been acknowledged and
@@ -91,7 +91,7 @@ class Flow(object):
         still unacknowledged after a period of time
 
         Args:
-            packet_id (int: packet_id of Packet being added to timed_out_packets
+            packet_id (int): packet_id of Packet being added to timed_out_packets
 
         """
         if packet_id in unacknowledged:
@@ -117,7 +117,7 @@ class Flow(object):
         unacknowledged.
 
         Args:
-            packet_id(int): Unique id identifying the packet
+            packet_id (int): Unique id identifying the packet
 
         """
         new_packet = DataPacket(packet_id, self.src.node_id,
@@ -176,7 +176,7 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
-        print("Flow ", self.flow_id, ": sending acknowledgement packet",
+        print("Flow", self.flow_id, ": sending acknowledgement packet",
             packet.packet_id)
         a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
             packet.dest, packet.packet_size, acknowledge_id, new_id)
