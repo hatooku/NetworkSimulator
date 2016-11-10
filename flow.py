@@ -28,7 +28,7 @@ class Flow(object):
     """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        window_size=10):
+        window_size=100):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
@@ -84,9 +84,10 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        self.unacknowledged_packets.remove(a_packet.packet_id)
-        self.check_flow_completion()
-        self.send_packets()
+        if a_packet.packet_id in self.unacknowledged_packets:
+            self.unacknowledged_packets.remove(a_packet.packet_id)
+            self.check_flow_completion()
+            self.send_packets()
 
     def time_out(self, packet_id):
         """Method where sent packet is added to timed_out_packets array if
@@ -99,6 +100,7 @@ class Flow(object):
         if packet_id in self.unacknowledged_packets:
             self.timed_out_packets.add(packet_id)
             self.unacknowledged_packets.remove(packet_id)
+            self.send_packets()
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -109,7 +111,9 @@ class Flow(object):
         """
         while (len(self.unacknowledged_packets) < self.window_size):
             if (len(self.timed_out_packets) > 0):
-                self.create_packet(min(timed_out_packets), delay)
+                packet_id = min(self.timed_out_packets)
+                self.create_packet(packet_id, delay)
+                self.timed_out_packets.remove(packet_id)
             elif self.num_packets_sent < self.num_packets:
                 self.create_packet(self.num_packets_sent, delay)
                 self.num_packets_sent += 1
