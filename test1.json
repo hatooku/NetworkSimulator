@@ -1,0 +1,115 @@
+{
+    "network": {
+        "hosts": [
+            {
+                "id": "H1",
+                "link": "L0"
+            },
+            {
+                "id": "H2",
+                "link": "L5"
+            }
+        ],
+        "links": [
+            {
+                "id": "L0",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "H1",
+                    "R1"
+                ]
+            },
+            {
+                "id": "L1",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R1",
+                    "R2"
+                ]
+            },
+            {
+                "id": "L2",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R1",
+                    "R2"
+                ]
+            },
+            {
+                "id": "L3",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R2",
+                    "R4"
+                ]
+            }
+            {
+                "id": "L4",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R3",
+                    "R5"
+                ]
+            }
+            {
+                "id": "L5",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R4",
+                    "H2"
+                ]
+            }
+        ],
+        "routers": [
+            {
+                "id": "R1",
+                "links": [
+                    "L0",
+					"L1"
+            	]
+            },
+			{
+                "id": "R2",
+                "links": [
+                    "L0",
+					"L1"
+				]
+            },
+			{
+                "id": "R3",
+                "links": [
+                    "L0",
+					"L1"
+				]
+            },
+			{
+                "id": "R4",
+                "links": [
+                    "L0",
+					"L1"
+				]
+			}
+        ],
+        "flows": [
+            {
+                "id": "F1",
+                "src": "H1",
+                "dest": "H2",
+                "data_amt": 20,
+                "starting_time": 1.0
+            }
+        ]
+    }
+}
