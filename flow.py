@@ -11,8 +11,8 @@ class Flow(object):
     Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
         flow_id (string): Unique id identifying the flow
-        src (string): The flow's source node id
-        dest (string): The flow's destination node
+        src (Node): The flow's source node id
+        dest (Node): The flow's destination node
         data_amount (float): Data capacity of the flow (bits)
 
         window_size (float): The size of the window
@@ -71,7 +71,7 @@ class Flow(object):
         """Method that checks if all packets have been acknowledged and
         updating the NetworkSimulator object accordingly
         """
-        if self.last_acknowledged == self.num_packets:
+        if len(self.unacknowledged) == 0:
             self.ns.decrement_active_flows()
 
     def update_flow(a_packet):
@@ -88,8 +88,14 @@ class Flow(object):
         self.last_acknowledged = a_packet.packet_id
         self.unacknowledged_packets.remove(a_packet.packet_id)
 
+    def send_packet(self):
+        """Method sends packets by first going through unacknowledged_packets
 
-    def make_data_packet(self, src, dest, packet_size, data):
+        """
+        next_packet = unacknowledged_packets.items()[0]
+        self.make_data_packet(next_packet)
+
+    def make_data_packet(self, packet):
         """Method makes the packet and triggers the send_packet method for the
         host if applicable
 
@@ -101,16 +107,16 @@ class Flow(object):
             flow_id (string): Unique id indicating packet
             data (string): The data in the packet
         """
-        new_packet = DataPacket(ns, self.num_packets_sent + 1, src, dest,
-            self.flow_id, packet_size, data)
+        new_packet = DataPacket(ns, self.num_packets_sent + 1, packet.src,
+            packet.dest, self.flow_id, packet.packet_size, packet.data)
         print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
 
-        event = lambda: self.ns.hosts[new_packet.src].send_packet(new_packet)
+        event = lambda: self.src.send_packet(new_packet)
         self.ns.add_event(event)
 
         self.num_packets_sent += 1
 
-    def make_acknowledgment_packet(self, packet_id, src, dest, packet_size, acknowledge_id):
+    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size, acknowledge_id):
         """Method makes the packet and triggers the send_packet method for the
         host if applicable
 
@@ -126,7 +132,7 @@ class Flow(object):
         new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
             packet_size, self.flow_id, acknowledge_id)
 
-        event = lambda: self.ns.hosts[new_packet.src].send_packet(new_packet)
+        event = lambda: self.src.send_packet(new_packet)
         self.ns.add_event(event)
 
     def receive_packet(self, packet):
@@ -151,7 +157,7 @@ class Flow(object):
         a_packet = make_acknowledgment_packet(packet.packet_id, packet.src,
             packet.dest, packet.packet_size, acknowledge_id, new_id)
 
-        event = lambda: self.ns.hosts[packet.src].send_packet(packet)
+        event = lambda: self.src.send_packet(packet)
         self.ns.add_event(event)
 
         num_packets_sent += 1
