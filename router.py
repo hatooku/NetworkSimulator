@@ -49,7 +49,8 @@ class Router(Node):
         link = self.routing_table[packet.dest.node_id][0]
 
         event = lambda: link.add_packet(packet, self.node_id)
-        self.ns.add_event(event)
+        description = "Link.add_packet() with packet id =", packet.packet_id
+        self.ns.add_event(event, description)
 
     def receive_packet(self, packet, link_id):
         """Receives a packet from another node.
@@ -77,7 +78,8 @@ class Router(Node):
             dest = link.get_other_node_id(self.node_id)
             packet = RoutingPacket(None, src, dest, None, self.routing_table)
             event = lambda: link.add_packet(packet, self.node_id)
-            self.ns.add_event(event)
+            description = "Link.add_packet() with packet id =", packet.packet_id
+            self.ns.add_event(event, description)
 
     def update_routing_table(self, routing_packet, link_id):
         """Updates the routing table based on the routing packet the router just
