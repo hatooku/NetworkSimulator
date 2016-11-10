@@ -18,18 +18,24 @@ class Router(Node):
         self.links = {}
         self.routing_table = {}
 
-    def add_link(self, link):
-        """Add a link to the router.
+    def add_links(self, links):
+        """Add a dictionary of links to the router.
 
         Args:
-            link (Link): The link to add.
+            links (Link []): An array of links to add to the router.
 
         """
-        self.links[link.link_id] = link
+        for link in links:
+            # Add the link to the link dictionary.
+            self.links[link.link_id] = link
 
-        # Add the link to the routing table
-        node_id = link.get_other_node_id(self.node_id)
-        self.routing_table[node_id] = (link, link.prop_delay)
+            # Add the link to the routing table.
+            node_id = link.get_other_node_id(self.node_id)
+            self.routing_table[node_id] = (link, link.prop_delay)
+
+        # Send out routing packets to update all the other router's routing 
+        # tables.
+        self.send_routing_packets()
 
     def send_packet(self, packet):
         """Sends a packet to another node.
