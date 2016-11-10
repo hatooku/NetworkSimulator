@@ -22,13 +22,12 @@ class Flow(object):
         num_packets (float):  Number of packets to be sent through the flow
         num_packets_sent(float): Number of packets that have been sent through
             the flow
-        last_acknowledged (float): The last acknowledged packet in the flow
         start_time (float): Start time in seconds
 
     """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        unacknowledged_packets):
+        window_size=1):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
@@ -36,13 +35,12 @@ class Flow(object):
         self.data_amount = data_amount
         self.start_time = start_time
         self.num_packets_sent = 0
-        self.unacknowledged_packets = {}
-        self.last_acknowledged = 0
+        self.unacknowledged_packets = set()
+        self.timed_out_packets = set()
+        self.num_packets = data_amount/DATA_PACKET_SIZE
+        self.window_size = window_size
 
-        self.window_size = 1
-        self.current_packet  = 0
-        self.num_packets = 0
-
+        self.send_packets()
 
     @property
     def flow_id(self):
@@ -86,45 +84,61 @@ class Flow(object):
         print("Flow: updated with acknowledgement packet: ", a_packet.id,
             "And flow", self.flow_id)
         self.check_last()
-        self.last_acknowledged = a_packet.packet_id
         self.unacknowledged_packets.remove(a_packet.packet_id)
 
-    def send_packet(self):
-        """Method sends packets by first going through unacknowledged_packets
-
-        """
-        next_packet = unacknowledged_packets.items()[0]
-        self.make_data_packet(next_packet)
-        print("Flow ", self.flow_id, ": sending packet", next_packet.packet_id)
-
-
-    def make_data_packet(self, packet):
-        """Method makes the packet and triggers the send_packet method for the
-        host if applicable
+    def time_out(self, packet_id):
+        """Method where sent packet is added to timed_out_packets array if
+        still unacknowledged after a period of time
 
         Args:
-            packet_id (string): Unique id identifying the packet
-            src (Node): The packet's source node
-            dest (Node): The packet's destination node
-            packet_size (float): The packet's size in bits
-            flow_id (string): Unique id indicating packet
-            data (string): The data in the packet
+            packet (Packet): Packet being added to time_out dictionary
         """
-        new_packet = DataPacket(ns, self.num_packets_sent + 1, packet.src,
-            packet.dest, self.flow_id, packet.data)
+        if packet_id in unacknowledged:
+            timed_out_packets.add(packet_id)
+            unacknowledged_packets.remove(packet_id)
+            print("Packet ", packet_id, " timed out in Flow ", self.flow_id)
+
+    def send_packets(self):
+        """Method sends as many packets as posssible, trigerring the
+        create_packet function
+        """
+        while (len(self.unacknowledged_packets) < self.window_size):
+            if (len(timed_out_packets) > 0):
+                self.create_packet(min(timed_out_packets))
+            else:
+                self.create_packet(self.num_packets_sent)
+                self.num_packets_sent += 1
+
+    def create_packet(self, packet_id):
+        """Method creates packet and then adds them to event queue to be send
+        to the host, and adds a timing event to ensure that they are resent if
+        unacknowledged.
+
+        Args:
+            packet_id(int): Unique id identifying the packet
+
+        """
+        new_packet = DataPacket(packet_id, self.src.node_id,
+            self.dest.node_id, self.flow_id)
+
         print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
 
-        event = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event)
+        self.unacknowledged_packets.add(new_packet.packet_id)
 
-        self.num_packets_sent += 1
+        # Adding events to queues
+        event1 = lambda: self.src.send_packet(new_packet)
+        self.ns.add_event(event1)
+        event2 = lambda: self.time_out(new_packet.packet_id)
+        self.ns.add_event(event2, delay=ACK_DELAY)
+
+        print("Flow ", self.flow_id, ": sent data packet", new_packet.packet_id)
 
     def make_acknowledgement_packet(self, packet_id, src, dest, packet_size, acknowledge_id):
-        """Method makes the packet and triggers the send_packet method for the
-        host if applicable
+        """Method makes the AcknowledgementPacket and triggers the send_packet
+        method for the host if applicable
 
         Args:
-            packet_id (string): Unique id identifying the packet
+            packet_id (int): Unique id identifying the packet
             src (Node): The packet's source node
             dest (Node): The packet's destination node
             packet_size (float): The packet's size in bits
@@ -141,8 +155,11 @@ class Flow(object):
     def receive_packet(self, packet):
         """Method receives a given packet.  If it's a data packet, send an
         acknowledgement packet.  If it's an acknowledgement packet, update_flow
+
+        args:
+            packet (Packet): packet object being received
         """
-        print("Flow ", self.flow_id, ": received data packet", new_packet.packet_id)
+        print("Flow ", self.flow_id, ": received data packet", packet.packet_id)
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
@@ -156,12 +173,9 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
         """
         print("Flow ", self.flow_id, ": sending acknowledgement packet",
-            new_packet.packet_id)
-        new_id = packet.packet_id + 1
+            packet.packet_id)
         a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
             packet.dest, packet.packet_size, acknowledge_id, new_id)
 
         event = lambda: self.src.send_packet(packet)
         self.ns.add_event(event)
-
-        num_packets_sent += 1
