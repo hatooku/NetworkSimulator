@@ -44,7 +44,7 @@ class Router(Node):
         link, _ = self.routing_table[packet.dest.node_id]
 
         event = lambda: link.add_packet(packet, self.node_id)
-        ns.add_event(event)
+        self.ns.add_event(event)
 
     def receive_packet(self, packet, link_id):
         """Receives a packet from another node.
@@ -66,12 +66,12 @@ class Router(Node):
     def send_routing_packets(self):
         """Sends out the routing table to all of the router's links."""
 
-        for _, link in links:
+        for _, link in self.links:
             src = self.node_id
             dest = link.get_other_node_id(self.node_id)
             packet = RoutingPacket(None, src, dest, None, self.routing_table)
             event = lambda: link.add_packet(packet, self.node_id)
-            ns.add_event(event)
+            self.ns.add_event(event)
 
     def update_routing_table(self, routing_packet, link_id):
         """Updates the routing table based on the routing packet the router just
