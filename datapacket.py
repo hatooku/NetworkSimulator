@@ -9,7 +9,7 @@ class DataPacket(Packet):
         src (string): The flow's source node id
         dest (string): The flow's destination node
         packet_size (float): The packet's size in bits
-        flow_id (string): Unique id indicating packet
+        flow_id (string): Unique id indicating flow
         data (string): Data string being stored in the packet in bits
     """
 

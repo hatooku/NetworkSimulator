@@ -5,14 +5,12 @@ class AcknowledgementPacket(Packet):
 
     Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
-        packet_id (string): Unique id identifying the packet
+        packet_id (int): Unique id identifying the packet
         src (string): The flow's source node id
         dest (string): The flow's destination node
         packet_size (float): The packet's size in bits
-        flow_id (string): Unique id indicating packet
-        acknowledge_id (string): Unique id identifying packet being acknowledged
+        flow_id (string): Unique id indicating flow
     """
 
     def __init__(self, ns, packet_id, src, dest, packet_size, flow_id, acknowledge_id):
         Packet.__init__(self, ns, packet_id, src, dest, packet_size, flow_id)
-        self.acknowledge_id = acknowledge_id
