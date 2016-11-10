@@ -13,5 +13,5 @@ class DataPacket(Packet):
     """
 
     def __init__(self, packet_id, src, dest, flow_id, data=""):
-        Packet.__init__(self, ns, packet_id, src, dest, DATA_PACKET_SIZE, flow_id)
+        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id)
         self.data = data

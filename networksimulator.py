@@ -54,7 +54,7 @@ class NetworkSimulator(object):
     @property
     def num_active_flows(self):
         return self._num_active_flows
-    
+
     @num_active_flows.setter
     def num_active_flows(self, num):
         raise Exception("Cannot modify num_active_flows in NetworkSimulator")
@@ -199,7 +199,7 @@ class NetworkSimulator(object):
 
     def run(self, duration=sys.float_info.max):
         """Runs the simulation for the given duration.
-        
+
         Args:
             duration (float): the duration of the simulation in seconds.
                 By default, the simulation runs until termination.
@@ -242,7 +242,7 @@ class NetworkSimulator(object):
         self._cur_time = 0
         self._num_active_flows = 0
         self._event_counter = 0
-""" 
+"""
 from networksimulator import NetworkSimulator
 n = NetworkSimulator()
 n.populate("test1.json")

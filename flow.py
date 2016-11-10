@@ -3,6 +3,7 @@ from packet import Packet
 from datapacket import DataPacket
 from acknowledgementpacket import AcknowledgementPacket
 from routingpacket import RoutingPacket
+from constants import *
 
 class Flow(object):
     """A flow class that represents active connections between
@@ -110,7 +111,7 @@ class Flow(object):
             data (string): The data in the packet
         """
         new_packet = DataPacket(ns, self.num_packets_sent + 1, packet.src,
-            packet.dest, self.flow_id, packet.packet_size, packet.data)
+            packet.dest, self.flow_id, packet.data)
         print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
 
         event = lambda: self.src.send_packet(new_packet)
@@ -132,7 +133,7 @@ class Flow(object):
         """
         print("Flow ", self.flow_id, ": made acknowledgement packet", packet_id)
         new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
-            packet_size, self.flow_id, acknowledge_id)
+            self.flow_id, acknowledge_id)
 
         event = lambda: self.src.send_packet(new_packet)
         self.ns.add_event(event)
