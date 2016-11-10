@@ -72,7 +72,7 @@ class Flow(object):
         updating the NetworkSimulator object accordingly
         """
         if self.last_acknowledged == self.num_packets:
-            self.ns.num_active_flows -= 1
+            self.ns.decrement_active_flows()
 
     def update_flow(a_packet):
         """Upon receiving an acknowledgement packet, updating the flow's
@@ -85,6 +85,7 @@ class Flow(object):
         print("Flow: updated with acknowledgement packet: ", a_packet.id,
             "And flow", self.flow_id)
         self.check_last()
+        self.last_acknowledged = a_packet.packet_id
         self.unacknowledged_packets.remove(a_packet.packet_id)
 
 
@@ -98,11 +99,11 @@ class Flow(object):
             dest (Node): The packet's destination node
             packet_size (float): The packet's size in bits
             flow_id (string): Unique id indicating packet
-            data (any datatype): The data in the packet
+            data (string): The data in the packet
         """
-        print("Flow: made data packet", self.flow_id)
         new_packet = DataPacket(ns, self.num_packets_sent + 1, src, dest,
             self.flow_id, packet_size, data)
+        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
 
         event = lambda: self.ns.hosts[new_packet.src].send_packet(new_packet)
         self.ns.add_event(event)
@@ -121,21 +122,18 @@ class Flow(object):
             flow_id (string): Unique id indicating packet
             acknowledge_id (string): Unique id identifying packet being acknowledged
         """
-        print("Flow: made acknowledgement packet", packet.packet_id,
-            "in flow", flow.flow_id)
+        print("Flow ", self.flow_id, ": made data packet", packet_id)
         new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
             packet_size, self.flow_id, acknowledge_id)
 
         event = lambda: self.ns.hosts[new_packet.src].send_packet(new_packet)
         self.ns.add_event(event)
 
-        self.num_packets_sent += 1
-
     def receive_packet(self, packet):
-        """Method receives a given packet: acknowledges packet if it's a
-        data packet, updates the flow if it's an acknowledgement packet
+        """Method receives a given packet.  If it's a data packet, send an
+        acknowledgement packet.  If it's an acknowledgement packet, update_flow
         """
-        print("Flow: received packet", packet.packet_id, "in flow", flow.flow_id)
+        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
@@ -148,8 +146,7 @@ class Flow(object):
         Args:
             packet (Packet): The packet attempting to be acknowledged
         """
-        print("Flow: made acknowledgement packet", packet.packet_id,
-            "in flow", flow.flow_id)
+        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
         new_id = packet.packet_id + 1
         a_packet = make_acknowledgment_packet(packet.packet_id, packet.src,
             packet.dest, packet.packet_size, acknowledge_id, new_id)
@@ -158,7 +155,3 @@ class Flow(object):
         self.ns.add_event(event)
 
         num_packets_sent += 1
-
-
-    # Timeout method: check if packet has been acknowledged when time
-    # pops, if not, add time event to queue
