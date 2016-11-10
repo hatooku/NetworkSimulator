@@ -6,8 +6,8 @@ class Link(object):
     Attributes:
         ns (NetworkSimulator): stores the simulator class running the simulation
         link_id (string): a unique identifier for each link
-        max_buffer_size (int): how many bits can be stored in the link buffer
-        cur_buffer_size (int): how many bits are in the link buffer
+        max_buffer_size (float): how many bits can be stored in the link buffer
+        cur_buffer_size (float): how many bits are in the link buffer
         prop_delay (float): propagation delay of the link in s
         capacity (float): the maximum link rate in bits / s
         nodes (array): an array of the 2 nodes connected with this link
