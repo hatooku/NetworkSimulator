@@ -43,19 +43,24 @@ class Host(Node):
         self.flows[flow.flow_id] = flow
 
     def send_packet(self, packet):
-        """Sends a packet to another node.
+        """Sends a packet to another node by giving the packet to the host's
+        link.
 
         Args:
             packet (Packet): The packet to send.
 
         """
-        pass
+        event = lambda: self._link.add_packet(packet, self.node_id)
+        ns.add_event(event)
 
     def receive_packet(self, packet):
-        """Receives a packet from another node.
+        """Receives a packet from another node and then tells the flow that the
+        packet came from to receive the packet and respond accordingly.
 
         Args:
             packet (Packet): The packet we received.
             
         """
-        pass
+        assert packet.flow_id in self.flows
+        event = lambda: self.flows[packet.flow_id].receive_packet(packet)
+        ns.add_event(event)

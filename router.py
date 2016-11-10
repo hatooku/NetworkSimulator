@@ -5,7 +5,7 @@ class Router(Node):
 
     Attributes:
         ns (NetworkSimulator): An instance of the NetworkSimulator class.
-        node_id (int): The network address of the router.
+        node_id (string): The network address of the router.
         links (Link []): The links that the router is connected to.
         routing_table (dict): The routing table for the router.
 
