@@ -5,14 +5,13 @@ class Link(object):
        
     Attributes:
         ns (NetworkSimulator): stores the simulator class running the simulation
-        link_id (int): a unique identifier for each link
-        max_buffer_size (int): how many bits can be stored in the link buffer
-        prop_delay (float): propogation delay of the link in ms
-        capacity (float): the maximum link rate in bits / ms
+        link_id (string): a unique identifier for each link
+        max_buffer_size (float): how many bits can be stored in the link buffer
+        cur_buffer_size (float): how many bits are in the link buffer
+        prop_delay (float): propagation delay of the link in s
+        capacity (float): the maximum link rate in bits / s
         nodes (array): an array of the 2 nodes connected with this link
-    
         link_buffer (Deque): stores packets waiting to be sent on this link
-    
         cur_packet (Packet): stores the packet being sent on the link
         cur_destination (Node): stores where to send this packet
         
@@ -91,35 +90,79 @@ class Link(object):
         raise AttributeError("Current destination cannot be changed externally")    
     
     
-    def add_packet(self, packet, host_id):
+    def add_packet(self, packet, node_id):
         """Add a packet to be sent
         
-        Puts the packet in the packet buffer to be sent to to the host with the
-        other id. If no packet is being sent, calls the start_packet_transfer
+        Puts the packet in the packet buffer to be sent to to the node with the
+        other id. If no packet is being sent, calls start_packet_transfer.
+        If the buffer is full, the packet is dropped.
         
         Args:
             packet (Packet): the packet being sent
-            host_id (int): the id of the host sending the packet 
+            node_id (string): the id of the node sending the packet 
             
-        """        
-        pass
+        """  
+        
+        if self.cur_buffer_size + packet.packet_size <= self.max_buffer_size:
+            
+            if node_id == self.nodes[0].node_id:
+                destination = nodes[1]
+            elif node_id == self.nodes[1].node_id:
+                destination = nodes[0]
+            else:
+                raise Exception("This link is not connected to node with \
+                node_id %s" % node_id)
+            
+            self.link_buffer.append((packet, destination))
+            self.cur_buffer_size += packet.packet_size
+            
+            if self.cur_packet == None:
+                event = lambda: self.start_packet_transfer()
+                self.ns.add_event(event)
+        else:
+            print "Link with id %s is full so packet with \
+            id %s is dropped" % (self.link_id, packet.packet_id)
     
-    
-    def start_packet_trasfer(self):
+    def start_packet_transfer(self):
         """Send a packet
         
         Takes a packet out of the buffer and begins sending it to the correct
-        host. Sets the current packet and current destination of the link. 
+        node. Sets the current packet and current destination of the link. 
         
         """
+        assert self.cur_destination == None
+        assert self.cur_packet == None 
+        assert len(self.link_buffer) > 0   
+        
+        self.cur_packet, self.cur_destination = self.link_buffer.popleft()
+        
+        trans_delay = self.cur_packet.packet_size / self.capacity
+        time_to_pass = self.prop_delay + trans_delay
+        
+        event = lambda: self.finish_packet_transfer()
+        print "Link %s beginning to transfer packet %s" \
+              %(self.link_id, self.cur_packet.packet_id)
+        self.ns.add_event(event, time_to_pass)
    
     def finish_packet_transfer(self):
-        """Hand off the packet it to the Node it was going to. 
+        """Hand off the packet it to the node it was going to. 
         
         When this method is called, the packet will be transfered to the 
         correct node. If there is another packet in the buffer that needs to be
         sent, the start_packet_transfer function will be called and another
         packet will be sent.
         
-        """  
-        pass
+        """ 
+        event = lambda: self.cur_destination.receive_packet(self.cur_packet)
+        self.ns.add_event(event)
+        
+        print "Link %s finishing transfering packet %s. Handing to node %s" \
+        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id)        
+        
+        self.cur_packet = None
+        self.cur_destination = None
+        
+        if len(self.link_buffer) > 0:
+            event = lambda: self.start_packet_transfer()
+            self.ns.add_event(event)
+  
