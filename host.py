@@ -61,5 +61,6 @@ class Host(Node):
             packet (Packet): The packet we received.
             
         """
+        assert packet.flow_id in self.flows
         event = lambda: self.flows[packet.flow_id].receive_packet(packet)
         ns.add_event(event)
