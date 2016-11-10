@@ -13,16 +13,16 @@ class Flow(object):
         ns (NetworkSimulator): Instance of the NetworkSimulator class
         flow_id (string): Unique id identifying the flow
         src (Node): The flow's source node id
-        dest (Node): The flow's destination node
+        dest (Node): The flow's destination node id
         data_amount (float): Data capacity of the flow (bits)
 
-        window_size (float): The size of the window
+        start_time (float): Start time in seconds
         unacknowledged_packets (dict): The list of packets with no acknowledgement
-        current_packet (Packet): The current packet in the flow
-        num_packets (float):  Number of packets to be sent through the flow
+        timed_out_packets (dict): The list of packets timed out before acknowledgement
         num_packets_sent(float): Number of packets that have been sent through
             the flow
-        start_time (float): Start time in seconds
+        num_packets (float):  Number of packets to be sent through the flow
+        window_size (float): The size of the window
 
     """
 
@@ -66,24 +66,24 @@ class Flow(object):
     def dest(self, dest):
         raise AttributError("Cannot modify a flow's destination node.")
 
-    def check_last(self):
+    def check_flow_completion(self):
         """Method that checks if all packets have been acknowledged and
-        updating the NetworkSimulator object accordingly
+        updates the NetworkSimulator object accordingly.
+
         """
         if len(self.unacknowledged) == 0:
             self.ns.decrement_active_flows()
 
     def update_flow(a_packet):
-        """Upon receiving an acknowledgement packet, updating the flow's
+        """Upon receiving an acknowledgement packet, updates the flow's
         attributes
 
         Args:
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        print("Flow: updated with acknowledgement packet: ", a_packet.id,
-            "And flow", self.flow_id)
-        self.check_last()
+        print("Acknowledgement packet", packet_id, "in flow", self.flow_id)
+        self.check_flow_completion()
         self.unacknowledged_packets.remove(a_packet.packet_id)
 
     def time_out(self, packet_id):
@@ -91,16 +91,18 @@ class Flow(object):
         still unacknowledged after a period of time
 
         Args:
-            packet (Packet): Packet being added to time_out dictionary
+            packet_id (int: packet_id of Packet being added to timed_out_packets
+
         """
         if packet_id in unacknowledged:
             timed_out_packets.add(packet_id)
             unacknowledged_packets.remove(packet_id)
-            print("Packet ", packet_id, " timed out in Flow ", self.flow_id)
+            print("Packet", packet_id, "timed out in Flow", self.flow_id)
 
-    def send_packets(self):
-        """Method sends as many packets as posssible, trigerring the
-        create_packet function
+    def send_packet(self):
+        """Method sends as many packets as possible, triggering the
+        create_packet function.
+
         """
         while (len(self.unacknowledged_packets) < self.window_size):
             if (len(timed_out_packets) > 0):
@@ -110,7 +112,7 @@ class Flow(object):
                 self.num_packets_sent += 1
 
     def create_packet(self, packet_id):
-        """Method creates packet and then adds them to event queue to be send
+        """Method creates packet and then adds them to event queue to be sent
         to the host, and adds a timing event to ensure that they are resent if
         unacknowledged.
 
@@ -121,7 +123,7 @@ class Flow(object):
         new_packet = DataPacket(packet_id, self.src.node_id,
             self.dest.node_id, self.flow_id)
 
-        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
+        print("Flow", self.flow_id, ": made data packet", new_packet.packet_id)
 
         self.unacknowledged_packets.add(new_packet.packet_id)
 
@@ -131,7 +133,7 @@ class Flow(object):
         event2 = lambda: self.time_out(new_packet.packet_id)
         self.ns.add_event(event2, delay=ACK_DELAY)
 
-        print("Flow ", self.flow_id, ": sent data packet", new_packet.packet_id)
+        print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
     def make_acknowledgement_packet(self, packet_id, src, dest, packet_size, acknowledge_id):
         """Method makes the AcknowledgementPacket and triggers the send_packet
@@ -142,12 +144,12 @@ class Flow(object):
             src (Node): The packet's source node
             dest (Node): The packet's destination node
             packet_size (float): The packet's size in bits
-            flow_id (string): Unique id indicating packet
-            acknowledge_id (string): Unique id identifying packet being acknowledged
+            flow_id (string): Unique id indicating flow
+
         """
         print("Flow ", self.flow_id, ": made acknowledgement packet", packet_id)
         new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
-            self.flow_id, acknowledge_id)
+            self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
         self.ns.add_event(event)
@@ -158,8 +160,9 @@ class Flow(object):
 
         args:
             packet (Packet): packet object being received
+
         """
-        print("Flow ", self.flow_id, ": received data packet", packet.packet_id)
+        print("Flow", self.flow_id, ": received data packet", packet.packet_id)
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
@@ -171,6 +174,7 @@ class Flow(object):
 
         Args:
             packet (Packet): The packet attempting to be acknowledged
+
         """
         print("Flow ", self.flow_id, ": sending acknowledgement packet",
             packet.packet_id)

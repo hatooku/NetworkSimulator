@@ -11,5 +11,5 @@ class AcknowledgementPacket(Packet):
         flow_id (string): Unique id indicating flow
     """
 
-    def __init__(self, packet_id, src, dest, flow_id, acknowledge_id):
+    def __init__(self, packet_id, src, dest, flow_id):
         Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id)
