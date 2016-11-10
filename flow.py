@@ -92,7 +92,7 @@ class Flow(object):
         still unacknowledged after a period of time
 
         Args:
-            packet_id (int): packet_id of Packet being added to timed_out_packets
+            packet_id (int): packet_id of packet being added to timed_out_packets
 
         """
         if packet_id in unacknowledged:
