@@ -7,7 +7,7 @@ class DataPacket(Packet):
     Attributes:
         packet_id (string): Unique id identifying the packet
         src (string): The flow's source node id
-        dest (string): The flow's destination node
+        dest (string): The flow's destination node id
         flow_id (string): Unique id indicating flow
         data (string): Data string being stored in the packet in bits
     """
