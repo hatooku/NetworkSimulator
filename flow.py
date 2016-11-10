@@ -83,9 +83,10 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        print("Acknowledgement packet", packet_id, "in flow", self.flow_id)
         self.check_flow_completion()
         self.unacknowledged_packets.remove(a_packet.packet_id)
+        print("Acknowledged packet", packet_id, "in flow", self.flow_id)
+
 
     def time_out(self, packet_id):
         """Method where sent packet is added to timed_out_packets array if
