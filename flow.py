@@ -20,7 +20,7 @@ class Flow(object):
         start_time (float): Start time in seconds
         unacknowledged_packets (set): The list of packets with no acknowledgement
         timed_out_packets (set): The list of packets timed out before acknowledgement
-        num_packets_sent(float): Number of packets that have been sent through
+        num_packets_sent (float): Number of packets that have been sent through
             the flow
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
@@ -35,9 +35,9 @@ class Flow(object):
         self._dest = dest
         self.data_amount = data_amount
         self.start_time = start_time
-        self.num_packets_sent = 0
         self.unacknowledged_packets = set()
         self.timed_out_packets = set()
+        self.num_packets_sent = 0
         self.num_packets = math.ceil(data_amount/DATA_PACKET_SIZE)
         self.window_size = window_size
 
@@ -92,7 +92,7 @@ class Flow(object):
         still unacknowledged after a period of time
 
         Args:
-            packet_id (int): packet_id of Packet being added to timed_out_packets
+            packet_id (int): packet_id of packet being added to timed_out_packets
 
         """
         if packet_id in unacknowledged:
@@ -148,7 +148,7 @@ class Flow(object):
             flow_id (string): Unique id indicating flow
 
         """
-        print("Flow ", self.flow_id, ": made acknowledgement packet", packet_id)
+        print("Flow", self.flow_id, ": made acknowledgement packet", packet_id)
         new_packet = AcknowledgementPacket(packet_id, src, dest
             self.flow_id)
 
