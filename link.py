@@ -94,7 +94,7 @@ class Link(object):
         """Add a packet to be sent
         
         Puts the packet in the packet buffer to be sent to to the node with the
-        other id. If no packet is being sent, calls the start_packet_transfer.
+        other id. If no packet is being sent, calls start_packet_transfer.
         If the buffer is full, the packet is dropped.
         
         Args:
@@ -123,7 +123,7 @@ class Link(object):
             print "Link with id %s is full so packet with \
             id %s is dropped" % (self.link_id, packet.packet_id)
     
-    def start_packet_trasfer(self):
+    def start_packet_transfer(self):
         """Send a packet
         
         Takes a packet out of the buffer and begins sending it to the correct
@@ -147,7 +147,7 @@ class Link(object):
         self.ns.add_event(event, time_to_pass)
    
     def finish_packet_transfer(self):
-        """Hand off the packet it to the Node it was going to. 
+        """Hand off the packet it to the node it was going to. 
         
         When this method is called, the packet will be transfered to the 
         correct node. If there is another packet in the buffer that needs to be
