@@ -131,9 +131,9 @@ class Flow(object):
 
         # Adding events to queues
         event1 = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event1)
+        self.ns.add_event(event1, "Sending packet")
         event2 = lambda: self.time_out(new_packet.packet_id)
-        self.ns.add_event(event2, delay=ACK_DELAY)
+        self.ns.add_event(event2, "Adding to delay", delay=ACK_DELAY)
 
         print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
@@ -153,7 +153,7 @@ class Flow(object):
         new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
-        self.ns.add_event(event)
+        self.ns.add_event(event, "Adding ack packet")
 
     def receive_packet(self, packet):
         """Method receives a given packet.  If it's a data packet, send an
@@ -183,4 +183,4 @@ class Flow(object):
             packet.dest, packet.packet_size)
 
         event = lambda: self.src.send_packet(packet)
-        self.ns.add_event(event)
+        self.ns.add_event(event, "Adding acknowledgement")
