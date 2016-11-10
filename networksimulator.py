@@ -322,7 +322,7 @@ class NetworkSimulator(object):
         self.data_metrics.update_packet_send_time(flow_id, packet_id, self.cur_time)
 
     def record_packet_ack_time(self, flow_id, packet_id):
-        """Records a packet being acknowledge.
+        """Records a packet being acknowledged.
 
         Args:
             flow_id (str): the flow id of the flow the packet belongs to.
