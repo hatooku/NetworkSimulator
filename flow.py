@@ -28,7 +28,7 @@ class Flow(object):
     """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        window_size=100):
+        window_size=10):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
