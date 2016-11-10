@@ -84,8 +84,9 @@ class Link(object):
     def _get_other_node(self, node_id):
         """Finds the node that node with id node_id is linked to.
         
-        Checks which node of the links has the node_id is passed in and returns
-        the other node. If neither node has that node_id, an error is thrown.
+        Checks which node of the links has the node_id that was passed in and 
+        returns the other node. If neither node has that node_id, an error is
+        thrown.
         
         Args:
             node_id (string): the id of the node whose opposite we wish to find.
@@ -105,7 +106,7 @@ class Link(object):
         """Finds the id of the node that node with id node_id is linked to.
         
         Gets the opposite node of the node with id node_id and returns the id.
-        Allowed to be called publically
+        Allowed to be called publicly
           
         Args:
             node_id (string): the id of the node whose opposite we wish to find.
