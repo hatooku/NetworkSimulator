@@ -53,12 +53,13 @@ class Host(Node):
         event = lambda: self._link.add_packet(packet, self.node_id)
         self.ns.add_event(event)
 
-    def receive_packet(self, packet):
+    def receive_packet(self, packet, link_id):
         """Receives a packet from another node and then tells the flow that the
         packet came from to receive the packet and respond accordingly.
 
         Args:
             packet (Packet): The packet we received.
+            link_id (string): The link id of the link the packet is on.
             
         """
         assert packet.flow_id in self.flows

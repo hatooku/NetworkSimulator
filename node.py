@@ -23,16 +23,6 @@ class Node(object):
         raise AttributeError("Cannot modify node id")
 
     @abc.abstractmethod
-    def add_link(self, link):
-        """Add a link to the node.
-
-        Args:
-            link (Link): The link to add.
-
-        """
-        return
-
-    @abc.abstractmethod
     def send_packet(self, packet):
         """Sends a packet to another node. Must be implemented by host or
         router.
@@ -44,12 +34,13 @@ class Node(object):
         return
 
     @abc.abstractmethod
-    def receive_packet(self, packet):
+    def receive_packet(self, packet, link_id):
         """Receives a packet from another node. Must be implemented by host or
         router.
 
         Args:
             packet (Packet): The packet we received.
+            link_id (string): The link id of the link the packet is on.
             
         """
         return

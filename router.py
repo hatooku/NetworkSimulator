@@ -59,6 +59,7 @@ class Router(Node):
 
         Args:
             packet (Packet): The packet we received.
+            link_id (string): The link id of the link the packet is on.
 
         """
 
