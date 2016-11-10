@@ -110,7 +110,7 @@
                 "src": "H1",
                 "dest": "H2",
                 "data_amt": 20,
-                "starting_time": 1.0
+                "starting_time": 0.5
             }
         ]
     }

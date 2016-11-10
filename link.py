@@ -145,7 +145,7 @@ class Link(object):
             self._cur_buffer_size += packet.packet_size
             self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
             
-            if self.cur_packet == None:
+            if self.cur_packet is None:
                 self._cur_packet, self._cur_destination = self.link_buffer.popleft()
                 event = lambda: self.start_packet_transfer()
                 self.ns.add_event(event, "Link.start_packet_transfer() with"
@@ -162,8 +162,9 @@ class Link(object):
         node. Sets the current packet and current destination of the link. 
         
         """
-        assert self.cur_destination is not None
-        assert self.cur_packet is not None 
+        if self.cur_destination is None:
+            assert self.cur_packet is None
+            self._cur_packet, self._cur_destination = self.link_buffer.popleft()
         
         self._cur_buffer_size -= self.cur_packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
@@ -172,9 +173,8 @@ class Link(object):
         time_to_pass = self.prop_delay + trans_delay
         
         event = lambda: self.finish_packet_transfer()
-              %(self.link_id, self.cur_packet.packet_id)
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
-                          " link_id = %s" % (self.link_id), time_to_pass)
+                          " link_id = %s" % self.link_id, time_to_pass)
    
     def finish_packet_transfer(self):
         """Hand off the packet it to the node it was going to. 

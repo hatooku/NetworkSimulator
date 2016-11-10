@@ -46,7 +46,7 @@ class Router(Node):
         """
 
         # Use the routing table to send a packet to the right node
-        link = self.routing_table[packet.dest.node_id][0]
+        link = self.routing_table[packet.dest][0]
 
         event = lambda: link.add_packet(packet, self.node_id)
         description = "Link.add_packet() with packet id =", packet.packet_id

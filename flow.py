@@ -28,7 +28,7 @@ class Flow(object):
     """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        window_size=1):
+        window_size=10):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
@@ -73,7 +73,7 @@ class Flow(object):
 
         """
         if len(self.unacknowledged_packets) == 0 and \
-            self.num_packets == self.num_packets_sent:
+            self.num_packets <= self.num_packets_sent:
             self.ns.decrement_active_flows()
 
     def update_flow(self, a_packet):
@@ -87,7 +87,6 @@ class Flow(object):
         self.unacknowledged_packets.remove(a_packet.packet_id)
         self.check_flow_completion()
         self.send_packets()
-
 
     def time_out(self, packet_id):
         """Method where sent packet is added to timed_out_packets array if
@@ -111,9 +110,11 @@ class Flow(object):
         while (len(self.unacknowledged_packets) < self.window_size):
             if (len(self.timed_out_packets) > 0):
                 self.create_packet(min(timed_out_packets), delay)
-            else:
+            elif self.num_packets_sent < self.num_packets:
                 self.create_packet(self.num_packets_sent, delay)
                 self.num_packets_sent += 1
+            else:
+                break
 
     def create_packet(self, packet_id, delay=0.0):
         """Method creates packet and then adds them to event queue to be sent
@@ -136,7 +137,7 @@ class Flow(object):
         event1 = lambda: self.src.send_packet(new_packet)
         event1_message = "flow.create_packet: Flow" + str(self.flow_id) + \
             ": made data packet " + str(new_packet.packet_id)
-        self.ns.add_event(event1, event1_message + s, delay=delay)
+        self.ns.add_event(event1, event1_message, delay=delay)
 
         event2 = lambda: self.time_out(new_packet.packet_id)
         event2_message = "flow.create_packet: Adding to time_out_packets, packet " + \

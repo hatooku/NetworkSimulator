@@ -183,9 +183,10 @@ class DataMetrics(object):
     def plot_buffer_occupancy(self):
         legend_names = []
         for link_id in self.buffer_occupancy:
-            data = zip(*self.buffer_occupancy[link_id])
-            plt.plot(data[0], data[1], '-o')
-            legend_names.append(link_id)
+            if link_id == "L1":
+                data = zip(*self.buffer_occupancy[link_id])
+                plt.plot(data[0], data[1], 'o')
+                legend_names.append(link_id)
         plt.legend(legend_names)
         plt.show()
 
