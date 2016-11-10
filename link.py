@@ -17,7 +17,8 @@ class Link(object):
         
     """
 
-    def __init__ (self, ns, link_id, max_buffer_size, prop_delay, capacity, nodes):
+    def __init__ (self, ns, link_id, max_buffer_size, prop_delay, capacity, 
+                  nodes):
         self._ns = ns
         self._link_id = link_id
         self._max_buffer_size = max_buffer_size
@@ -176,7 +177,8 @@ class Link(object):
         packet will be sent.
         
         """ 
-        event = lambda: self.cur_destination.receive_packet(self.cur_packet)
+        event = lambda: self.cur_destination.receive_packet(self.cur_packet, 
+                                                            self.link_id)
         self.ns.add_event(event)
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
