@@ -19,9 +19,10 @@ class Link(object):
 
     def __init__ (self, ns, link_id, max_buffer_size, prop_delay, capacity, 
                   nodes):
-        self._ns = ns
+        self.ns = ns
         self._link_id = link_id
         self._max_buffer_size = max_buffer_size
+        self._cur_buffer_size = 0.0
 
         self._prop_delay = prop_delay
         self._capacity = capacity
@@ -32,7 +33,7 @@ class Link(object):
         
         self.link_buffer = deque()
         self._cur_packet = None
-        self._cur_direction = None
+        self._cur_destination = None
         
     @property
     def link_id(self):
@@ -49,6 +50,14 @@ class Link(object):
     @max_buffer_size.setter
     def max_buffer_size(self, value):
         raise AttributeError("Cannot modify link's maximum buffer size")
+    
+    @property
+    def cur_buffer_size(self):
+        return self._cur_buffer_size
+
+    @cur_buffer_size.setter
+    def cur_buffer_size(self, new_buffer_size):
+        raise AttributeError("Cannot modify current buffer size")
     
     @property
     def prop_delay(self):
@@ -78,7 +87,7 @@ class Link(object):
     def cur_destination(self):
         return self._cur_destination
     
-    @cur_packet.setter
+    @cur_destination.setter
     def cur_destination(self, value):
         raise AttributeError("Current destination cannot be changed externally")    
 
@@ -95,12 +104,12 @@ class Link(object):
         """
         destination = None
         if node_id == self.nodes[0].node_id:
-            destination = nodes[1]
+            destination = self.nodes[1]
         elif node_id == self.nodes[1].node_id:
-            destination = nodes[0]   
+            destination = self.nodes[0]   
         else:
-            raise Exception("This link is not connected to node with \
-            node_id %s" % node_id)    
+            raise Exception("This link is not connected to node with"
+                            "node_id %s" % node_id)    
         return destination        
         
     def get_other_node_id(self, node_id):
@@ -131,18 +140,17 @@ class Link(object):
         
         if self.cur_buffer_size + packet.packet_size <= self.max_buffer_size:
             
-            destination = self._get_other_node(node_id) 
-            
+            destination = self._get_other_node(node_id)
             self.link_buffer.append((packet, destination))
-            self.cur_buffer_size += packet.packet_size
+            self._cur_buffer_size += packet.packet_size
             self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
             
             if self.cur_packet == None:
                 event = lambda: self.start_packet_transfer()
                 self.ns.add_event(event)
         else:
-            print "Link with id %s is full so packet with \
-            id %s is dropped" % (self.link_id, packet.packet_id)
+            print "Link with id %s is full so packet with ", \
+                  "id %s is dropped" % (self.link_id, packet.packet_id)
             self.ns.record_packet_loss(self.link_id)
     
     def start_packet_transfer(self):
@@ -156,8 +164,8 @@ class Link(object):
         assert self.cur_packet == None 
         assert len(self.link_buffer) > 0   
         
-        self.cur_packet, self.cur_destination = self.link_buffer.popleft()
-        self.cur_buffer_size -= self.cur_packet.packet_size
+        self._cur_packet, self._cur_destination = self.link_buffer.popleft()
+        self._cur_buffer_size -= self.cur_packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
         
         trans_delay = self.cur_packet.packet_size / self.capacity
@@ -176,17 +184,17 @@ class Link(object):
         sent, the start_packet_transfer function will be called and another
         packet will be sent.
         
-        """ 
-        event = lambda: self.cur_destination.receive_packet(self.cur_packet, 
-                                                            self.link_id)
+        """
+        x = self.cur_destination
+        event = lambda: x.receive_packet(self.cur_packet, self.link_id)
         self.ns.add_event(event)
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
-        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id) 
+        %(self.link_id, self.cur_packet.packet_id, self.cur_destination.node_id) 
         self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
         
-        self.cur_packet = None
-        self.cur_destination = None
+        self._cur_packet = None
+        self._cur_destination = None
         
         if len(self.link_buffer) > 0:
             event = lambda: self.start_packet_transfer()

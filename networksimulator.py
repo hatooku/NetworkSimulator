@@ -110,7 +110,7 @@ class NetworkSimulator(object):
         link = Link(self, link_id, size_bits, prop_delay_s, capacity_bps, nodes)
         self.links[link_id] = link
 
-    def add_flow(self, flow_id, src, dest, data_amount):
+    def add_flow(self, flow_id, src, dest, data_amount, start_time):
         """Adds a new flow to the network.
 
         Args:
@@ -118,12 +118,13 @@ class NetworkSimulator(object):
             src (Host): source host
             dest (Host): destination host
             data_amount (float): amount of data to be sent in MB
+            start_time (float): when the flow starts sending packets in seconds
 
         """
         # Convert data_amount from megabytes to bits
         num_bits = data_amount * BYTE_TO_BIT * MEGABIT_TO_BIT
 
-        flow = Flow(self, flow_id, src, dest, num_bits)
+        flow = Flow(self, flow_id, src, dest, num_bits, start_time)
         self.flows[flow_id] = flow
         self._num_active_flows += 1
 
@@ -192,9 +193,9 @@ class NetworkSimulator(object):
                 raise Exception("Invalid network description")
             src = self.nodes[flow["src"]]
             dest = self.nodes[flow["dest"]]
+            start_time = float(flow["starting_time"])
 
-            # NEED TO ADD STARTING TIME
-            self.add_flow(flow_id, src, dest, data_amt)
+            self.add_flow(flow_id, src, dest, data_amt, start_time)
 
             print "Flow %s added to network." % flow_id
 
@@ -208,10 +209,9 @@ class NetworkSimulator(object):
         # Add links to routers
         for router in network.get("routers", []):
             router_id = router["id"]
-            for link_id in router["links"]:
-                link = self.links[link_id]
-                self.nodes[router_id].add_link(link)
-                print "Link %s added to Router %s." % (link_id, router_id)
+            links = [self.links[link_id] for link_id in router["links"]]
+            self.nodes[router_id].add_links(links)
+            print "Links %s added to Router %s." % (router["links"], router_id)
 
         print "Network successfully populated."
 
@@ -226,19 +226,20 @@ class NetworkSimulator(object):
 
         """
         while self.pq and self.num_active_flows > 0 and self.cur_time < duration:
-            event_time, _, f = heappop(self.pq)
+            event_time, _, f = heapq.heappop(self.pq)
             self.cur_time = event_time
             f()
 
         print "Simulation finished."
 
-    def add_event(self, f, delay=0.0):
+    def add_event(self, f, description, delay=0.0):
         """Adds an event to the priority queue.
 
         Args:
             f (func): the function to be run during this event.
             delay (float): the delay from the current time at which this event
                 should be executed in seconds.
+            description (str): description of the event
 
         """
         event = (self.cur_time + delay, self.event_counter, f)

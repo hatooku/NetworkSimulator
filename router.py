@@ -93,8 +93,8 @@ class Router(Node):
         cost = self.links[link_id].prop_delay
 
         for node_id, link_info in routing_packet.routing_table.iteritems():
-            if node_id not in self.routing_table or
-            link_info[1] + cost < self.routing_table[node_id][1]:
+            if node_id not in self.routing_table or \
+                link_info[1] + cost < self.routing_table[node_id][1]:
 
                 self.routing_table[node_id] = (self.links[link_id],
                     link_info[1] + cost)

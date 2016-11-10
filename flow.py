@@ -38,7 +38,7 @@ class Flow(object):
         self.unacknowledged_packets = set()
         self.timed_out_packets = set()
         self.num_packets_sent = 0
-        self.num_packets = math.ceil(data_amount/DATA_PACKET_SIZE)
+        self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = window_size
 
         self.send_packets()
@@ -107,7 +107,7 @@ class Flow(object):
 
         """
         while (len(self.unacknowledged_packets) < self.window_size):
-            if (len(timed_out_packets) > 0):
+            if (len(self.timed_out_packets) > 0):
                 self.create_packet(min(timed_out_packets))
             else:
                 self.create_packet(self.num_packets_sent)
@@ -150,8 +150,7 @@ class Flow(object):
 
         """
         print("Flow", self.flow_id, ": made acknowledgement packet", packet_id)
-        new_packet = AcknowledgementPacket(packet_id, src, dest
-            self.flow_id)
+        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
         self.ns.add_event(event)
