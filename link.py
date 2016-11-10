@@ -151,8 +151,8 @@ class Link(object):
                 self.ns.add_event(event, "Link.start_packet_transfer() with"
                           " link_id = %s" % (self.link_id))
         else:
-            print "Link with id %s is full so packet with ", \
-                  "id %s is dropped" % (self.link_id, packet.packet_id)
+            print "Link %s is full; packet %s is dropped." \
+                % (self.link_id, packet.packet_id)
             self.ns.record_packet_loss(self.link_id)
     
     def start_packet_transfer(self):
