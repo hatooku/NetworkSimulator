@@ -66,14 +66,6 @@ class Link(object):
         raise AttributeError("Cannot modify link's capacity")
     
     @property
-    def direction(self):
-        return self._direction
-    
-    @direction.setter
-    def direction(self, value):
-        self._direction = value
-    
-    @property
     def cur_packet(self):
         return self._cur_packet
     
@@ -88,7 +80,40 @@ class Link(object):
     @cur_packet.setter
     def cur_destination(self, value):
         raise AttributeError("Current destination cannot be changed externally")    
-    
+
+    def _get_other_node(self, node_id):
+        """Finds the node that node with id node_id is linked to.
+        
+        Checks which node of the links has the node_id that was passed in and 
+        returns the other node. If neither node has that node_id, an error is
+        thrown.
+        
+        Args:
+            node_id (string): the id of the node whose opposite we wish to find.
+        
+        """
+        destination = None
+        if node_id == self.nodes[0].node_id:
+            destination = nodes[1]
+        elif node_id == self.nodes[1].node_id:
+            destination = nodes[0]   
+        else:
+            raise Exception("This link is not connected to node with \
+            node_id %s" % node_id)    
+        return destination        
+        
+    def get_other_node_id(self, node_id):
+        """Finds the id of the node that node with id node_id is linked to.
+        
+        Gets the opposite node of the node with id node_id and returns the id.
+        Allowed to be called publicly
+          
+        Args:
+            node_id (string): the id of the node whose opposite we wish to find.
+          
+          """        
+        other_node = self._get_other_node(node_id)
+        return other_node.node_id 
     
     def add_packet(self, packet, node_id):
         """Add a packet to be sent
@@ -105,16 +130,11 @@ class Link(object):
         
         if self.cur_buffer_size + packet.packet_size <= self.max_buffer_size:
             
-            if node_id == self.nodes[0].node_id:
-                destination = nodes[1]
-            elif node_id == self.nodes[1].node_id:
-                destination = nodes[0]
-            else:
-                raise Exception("This link is not connected to node with \
-                node_id %s" % node_id)
+            destination = self._get_other_node(node_id) 
             
             self.link_buffer.append((packet, destination))
             self.cur_buffer_size += packet.packet_size
+            #self.ns.log_buffer_size(self.link_id, self.cur_buffer_size)
             
             if self.cur_packet == None:
                 event = lambda: self.start_packet_transfer()
@@ -122,6 +142,7 @@ class Link(object):
         else:
             print "Link with id %s is full so packet with \
             id %s is dropped" % (self.link_id, packet.packet_id)
+            #self.ns.log_packet_drop(self.link_id)
     
     def start_packet_transfer(self):
         """Send a packet
@@ -135,6 +156,8 @@ class Link(object):
         assert len(self.link_buffer) > 0   
         
         self.cur_packet, self.cur_destination = self.link_buffer.popleft()
+        self.cur_buffer_size -= self.cur_packet.packet_size
+        #self.ns.log_buffer_size(self.link_id, self.cur_buffer_size)
         
         trans_delay = self.cur_packet.packet_size / self.capacity
         time_to_pass = self.prop_delay + trans_delay
@@ -157,7 +180,8 @@ class Link(object):
         self.ns.add_event(event)
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
-        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id)        
+        %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id) 
+        #self.ns.log_flow_thing(self.link_id, self.cur_packet.packet_size)
         
         self.cur_packet = None
         self.cur_destination = None
