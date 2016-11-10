@@ -134,12 +134,10 @@ class Link(object):
         assert self.cur_packet == None 
         assert len(self.link_buffer) > 0   
         
-        packet_info = self.link_buffer.popleft()
-        self.cur_packet = packet_info[0]
-        self.cur_destination = packet_info[1]
+        self.cur_packet, self.cur_destination = self.link_buffer.popleft()
         
-        time_to_pass = self.cur_packet.packet_size / self.capacity
-        time_to_pass += self.prop_delay
+        trans_delay = self.cur_packet.packet_size / self.capacity
+        time_to_pass = self.prop_delay + trans_delay
         
         event = lambda: self.finish_packet_transfer()
         print "Link %s beginning to transfer packet %s" \
