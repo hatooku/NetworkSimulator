@@ -269,15 +269,14 @@ class NetworkSimulator(object):
         """
         self.data_metrics.update_buffer_occupancy(link_id, buffer_occupancy, self.cur_time)
 
-    def record_packet_loss(self, link_id, num_packets_lost):
+    def record_packet_loss(self, link_id):
         """Records a packet loss data point.
 
         Args:
-            link_id (str): the link id of the link this point belongs to.
-            num_packets_lost (int): number of packets lost by the link at cur_time.
+            link_id (str): the link id of the link that dropped a packet.
 
         """
-        self.data_metrics.update_packet_loss(link_id, num_packets_lost, self.cur_time)
+        self.data_metrics.update_packet_loss(link_id, self.cur_time)
 
     def record_link_rate(self, link_id, amt_sent):
         """Records a link rate data point.
@@ -308,7 +307,6 @@ class NetworkSimulator(object):
 
         """
         self.data_metrics.update_window_size(flow_id, window_size, self.cur_time)
-
 
     def record_packet_send_time(self, flow_id, packet_id):
         """Records a packet being sent.
