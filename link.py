@@ -8,7 +8,7 @@ class Link(object):
         link_id (string): a unique identifier for each link
         max_buffer_size (int): how many bits can be stored in the link buffer
         cur_buffer_size (int): how many bits are in the link buffer
-        prop_delay (float): propogation delay of the link in s
+        prop_delay (float): propagation delay of the link in s
         capacity (float): the maximum link rate in bits / s
         nodes (array): an array of the 2 nodes connected with this link
         link_buffer (Deque): stores packets waiting to be sent on this link
@@ -153,7 +153,7 @@ class Link(object):
         packet will be sent.
         
         """ 
-        event = lambda: self.cur_destination.recieve_packet(self.cur_packet)
+        event = lambda: self.cur_destination.receive_packet(self.cur_packet)
         self.ns.add_event(event)
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
