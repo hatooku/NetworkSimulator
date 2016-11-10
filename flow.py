@@ -94,6 +94,8 @@ class Flow(object):
         """
         next_packet = unacknowledged_packets.items()[0]
         self.make_data_packet(next_packet)
+        print("Flow ", self.flow_id, ": sending packet", next_packet.packet_id)
+
 
     def make_data_packet(self, packet):
         """Method makes the packet and triggers the send_packet method for the
@@ -128,7 +130,7 @@ class Flow(object):
             flow_id (string): Unique id indicating packet
             acknowledge_id (string): Unique id identifying packet being acknowledged
         """
-        print("Flow ", self.flow_id, ": made data packet", packet_id)
+        print("Flow ", self.flow_id, ": made acknowledgement packet", packet_id)
         new_packet = AcknowledgementPacket(ns, packet_id, src, dest,
             packet_size, self.flow_id, acknowledge_id)
 
@@ -139,7 +141,7 @@ class Flow(object):
         """Method receives a given packet.  If it's a data packet, send an
         acknowledgement packet.  If it's an acknowledgement packet, update_flow
         """
-        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
+        print("Flow ", self.flow_id, ": received data packet", new_packet.packet_id)
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
@@ -152,9 +154,10 @@ class Flow(object):
         Args:
             packet (Packet): The packet attempting to be acknowledged
         """
-        print("Flow ", self.flow_id, ": made data packet", new_packet.packet_id)
+        print("Flow ", self.flow_id, ": sending acknowledgement packet",
+            new_packet.packet_id)
         new_id = packet.packet_id + 1
-        a_packet = make_acknowledgment_packet(packet.packet_id, packet.src,
+        a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
             packet.dest, packet.packet_size, acknowledge_id, new_id)
 
         event = lambda: self.src.send_packet(packet)
