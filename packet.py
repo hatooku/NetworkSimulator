@@ -1,3 +1,5 @@
+from constants import *
+
 class Packet(object):
     """A packet class that represents a data packet being sent from
         a source to a destination
