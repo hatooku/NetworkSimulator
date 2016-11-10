@@ -3,7 +3,6 @@ class Packet(object):
         a source to a destination
 
     Attributes:
-        ns (NetworkSimulator): Instance of the NetworkSimulator class
         packet_id (int): Unique id identifying the packet
         src (string): The flow's source node id
         dest (string): The flow's destination node

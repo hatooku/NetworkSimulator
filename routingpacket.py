@@ -4,7 +4,6 @@ class RoutingPacket(Packet):
     """A class that will represent routing table packets.
 
     Attributes:
-        ns (NetworkSimulator): Instance of the NetworkSimulator class
         packet_id (string): Unique id identifying the packet
         src (string): The flow's source node id
         dest (string): The flow's destination node
@@ -13,6 +12,6 @@ class RoutingPacket(Packet):
         routing_table (dict): Routing table
     """
 
-    def __init__(self, ns, packet_id, src, dest, packet_size, flow_id, routing_table):
-        Packet.__init__(self, ns, packet_id, src, dest, packet_size, flow_id)
+    def __init__(self, packet_id, src, dest, packet_size, flow_id, routing_table):
+        Packet.__init__(self, packet_id, src, dest, packet_size, flow_id)
         self.routing_table = routing_table
