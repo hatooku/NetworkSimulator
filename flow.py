@@ -72,7 +72,7 @@ class Flow(object):
         updates the NetworkSimulator object accordingly.
 
         """
-        if len(self.unacknowledged) == 0:
+        if len(self.unacknowledged) == 0 and self.num_packets == self.num_packets_sent:
             self.ns.decrement_active_flows()
 
     def update_flow(a_packet):
