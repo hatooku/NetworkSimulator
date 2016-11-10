@@ -113,7 +113,7 @@ class DataMetrics(object):
         elif self.flow_rate[flow_id][-1][0] == time:
             prev_amt_sent = self.flow_rate[flow_id][-1][1]
             self.flow_rate[flow_id].pop()
-        data_point = (time, prev_amt_sent amt_sent)
+        data_point = (time, prev_amt_sent, amt_sent)
         self.flow_rate[flow_id].append(data_point)
 
     def update_window_size(self, flow_id, window_size, time):
