@@ -12,10 +12,12 @@ from datametrics import DataMetrics
 
 class NetworkSimulator(object):
     """The main class for the network simulator.
+
     The NetworkSimulator holds a reference to all elements of the network in
     the form of dictionaries. Also, it has a priority queue of events based
     on execution time. Finally, it holds a reference to a DataMetrics object
     which contains all the data obtained by the simulator.
+
     Attributes:
         flows (dict): all flows with their ids as the keys
         links (dict): all links with their ids as the keys
@@ -27,6 +29,7 @@ class NetworkSimulator(object):
         cur_time (float): a current time counter in seconds
         num_active_flows (int): Number of currently active flows
         event_counter (int): an event counter used to uniquely identify events
+
     """
 
     def __init__(self):
@@ -67,31 +70,37 @@ class NetworkSimulator(object):
 
     def add_host(self, host_id, link, flows):
         """Adds a new host to the network.
+
         Args:
             host_id (str): The network address of the host.
             link (Link): The link that the host is connected to.
             flows (dict): All the flows that are going out of the host.
+
         """
         host = Host(self, host_id)
         self.nodes[host_id] = host
 
     def add_router(self, router_id, links):
         """Adds a new router to the network.
+
         Args:
             router_id (str): id of the router
             links (array): the links that the router is connected to.
+
         """
         router = Router(self, router_id)
         self.nodes[router_id] = router
 
     def add_link(self, link_id, max_buffer_size, prop_delay, capacity, nodes):
         """Adds a new link to the network.
+
         Args:
             link_id (str): id of the link
             max_buffer_size (float): link buffer size in KB
             prop_delay (float): propogation delay of the link in ms
             capacity (float): the maximum link rate in Mbps
             nodes (array): an array of the 2 nodes connected with this link
+
         """
         # convert units into bits and seconds
         size_bits = max_buffer_size * KILOBYTE_TO_BIT
@@ -103,11 +112,13 @@ class NetworkSimulator(object):
 
     def add_flow(self, flow_id, src, dest, data_amount):
         """Adds a new flow to the network.
+
         Args:
             flow_id (str): id of the flow
             src (Host): source host
             dest (Host): destination host
             data_amount (float): amount of data to be sent in MB
+
         """
         # Convert data_amount from megabytes to bits
         num_bits = data_amount * BYTE_TO_BIT * MEGABIT_TO_BIT
@@ -125,10 +136,13 @@ class NetworkSimulator(object):
 
     def populate(self, network_description):
         """Populates a new network given a network description in JSON form.
+
         num_active_flows is set to the number of flows.
+
         Args:
             network_description (str): name of the json file containing the
                 network description
+
         """
         self.clear_network()
 
@@ -209,6 +223,7 @@ class NetworkSimulator(object):
         Args:
             duration (float): the duration of the simulation in seconds.
                 By default, the simulation runs until termination.
+
         """
         while self.pq and self.num_active_flows > 0 and self.cur_time < duration:
             event_time, _, f = heappop(self.pq)
@@ -219,10 +234,12 @@ class NetworkSimulator(object):
 
     def add_event(self, f, delay=0.0):
         """Adds an event to the priority queue.
+
         Args:
             f (func): the function to be run during this event.
             delay (float): the delay from the current time at which this event
                 should be executed in seconds.
+
         """
         event = (self.cur_time + delay, self.event_counter, f)
         heapq.heappush(self.pq, event)
@@ -244,56 +261,70 @@ class NetworkSimulator(object):
 
     def record_buffer_occupancy(self, link_id, buffer_occupancy):
         """Records a buffer occupancy data point.
+
         Args:
             link_id (str): the link id of the link this point belongs to.
             buffer_occupancy (float): buffer_occupancy of the link at cur_time.
+
         """
         self.data_metrics.update_buffer_occupancy(link_id, buffer_occupancy, self.cur_time)
 
     def record_packet_loss(self, link_id):
         """Records a packet loss data point.
+
         Args:
             link_id (str): the link id of the link that dropped a packet.
+
         """
         self.data_metrics.update_packet_loss(link_id, self.cur_time)
 
     def record_link_rate(self, link_id, amt_sent):
         """Records a link rate data point.
+
         Args:
             link_id (str): the link id of the link this point belongs to.
             amt_sent (float): num of bits sent by the link at cur_time.
+
         """
         self.data_metrics.update_link_rate(link_id, amt_sent, self.cur_time)
 
     def record_flow_rate(self, flow_id, amt_sent):
         """Records a flow rate data point.
+
         Args:
             flow_id (str): the flow id of the flow this point belongs to.
             amt_sent (float): num of bits sent by the flow at cur_time.
+
         """
         self.data_metrics.update_flow_rate(flow_id, amt_sent, self.cur_time)
 
     def record_window_size(self, flow_id, window_size):
         """Records a window size data point.
+
         Args:
             flow_id (str): the flow id of the flow this point belongs to.
             window_size (int): the window size of the flow at cur_time.
+
         """
         self.data_metrics.update_window_size(flow_id, window_size, self.cur_time)
 
     def record_packet_send_time(self, flow_id, packet_id):
         """Records a packet being sent.
+
         Args:
             flow_id (str): the flow id of the flow the packet belongs to.
             packet_id (str): the packet id of the packet this point belongs to.
+
         """
         self.data_metrics.update_packet_send_time(flow_id, packet_id, self.cur_time)
 
     def record_packet_ack_time(self, flow_id, packet_id):
         """Records a packet being acknowledge.
+
         Args:
             flow_id (str): the flow id of the flow the packet belongs to.
             packet_id (str): the packet id of the packet this point belongs to.
+
         """
         self.data_metrics.update_packet_ack_time(flow_id, packet_id, self.cur_time)
 
