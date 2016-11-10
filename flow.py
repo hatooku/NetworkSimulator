@@ -148,7 +148,6 @@ class Flow(object):
             str(new_packet.packet_id)
         self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
 
-        print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
     def make_acknowledgement_packet(self, packet_id, src, dest, packet_size):
         """Method makes the AcknowledgementPacket and triggers the send_packet
@@ -162,7 +161,6 @@ class Flow(object):
             flow_id (string): Unique id indicating flow
 
         """
-        print("Flow", self.flow_id, ": made acknowledgement packet", packet_id)
         new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
@@ -178,7 +176,6 @@ class Flow(object):
             packet (Packet): packet object being received
 
         """
-        print("Flow", self.flow_id, ": received data packet", packet.packet_id)
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
@@ -192,6 +189,5 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
-        print "Flow", self.flow_id, ": sending acknowledgement packet", packet.packet_id
         self.make_acknowledgement_packet(packet.packet_id,
             packet.src, packet.dest, packet.packet_size)
