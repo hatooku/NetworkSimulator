@@ -57,7 +57,7 @@ class NetworkSimulator(object):
     
     @num_active_flows.setter
     def num_active_flows(self, num):
-        self._num_active_flows = num
+        raise Exception("Cannot modify num_active_flows in NetworkSimulator")
 
     @property
     def event_counter(self):
@@ -65,7 +65,7 @@ class NetworkSimulator(object):
 
     @event_counter.setter
     def event_counter(self, val):
-        self._event_counter = val
+        raise Exception("Cannot modify event_counter in NetworkSimulator")
 
     def add_host(self, host_id, link, flows):
         """Adds a new host to the network.
@@ -124,7 +124,10 @@ class NetworkSimulator(object):
 
         flow = Flow(self, flow_id, src, dest, num_bits)
         self.flows[flow_id] = flow
-        self.num_active_flows += 1
+        self._num_active_flows += 1
+
+    def decrement_active_flows(self):
+        self._num_active_flows -= 1
 
     def populate(self, network_description):
         """Populates a new network given a network description in JSON form.
@@ -220,7 +223,7 @@ class NetworkSimulator(object):
         """
         event = (self.cur_time + delay, self.event_counter, f)
         heapq.heappush(self.pq, event)
-        self.event_counter += 1
+        self._event_counter += 1
 
     def plot_metrics(self):
         """Plots all relevant metrics from DataMetrics."""
