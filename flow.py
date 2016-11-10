@@ -4,6 +4,7 @@ from datapacket import DataPacket
 from acknowledgementpacket import AcknowledgementPacket
 from routingpacket import RoutingPacket
 from constants import *
+import math
 
 class Flow(object):
     """A flow class that represents active connections between
@@ -37,7 +38,7 @@ class Flow(object):
         self.num_packets_sent = 0
         self.unacknowledged_packets = set()
         self.timed_out_packets = set()
-        self.num_packets = data_amount/DATA_PACKET_SIZE
+        self.num_packets = math.ceil(data_amount/DATA_PACKET_SIZE)
         self.window_size = window_size
 
         self.send_packets()
@@ -56,7 +57,7 @@ class Flow(object):
 
     @src.setter
     def src(self, src):
-        raise AttributeError("Cannot modify a flow's source node.")
+        raise AttributeError("Cannot modify a flow's source node id.")
 
     @property
     def dest(self):
@@ -64,7 +65,7 @@ class Flow(object):
 
     @dest.setter
     def dest(self, dest):
-        raise AttributeError("Cannot modify a flow's destination node.")
+        raise AttributeError("Cannot modify a flow's destination node id.")
 
     def check_flow_completion(self):
         """Method that checks if all packets have been acknowledged and
@@ -99,7 +100,7 @@ class Flow(object):
             unacknowledged_packets.remove(packet_id)
             print("Packet", packet_id, "timed out in Flow", self.flow_id)
 
-    def send_packet(self):
+    def send_packets(self):
         """Method sends as many packets as possible, triggering the
         create_packet function.
 
@@ -135,7 +136,7 @@ class Flow(object):
 
         print("Flow", self.flow_id, ": sent data packet", new_packet.packet_id)
 
-    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size, acknowledge_id):
+    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size):
         """Method makes the AcknowledgementPacket and triggers the send_packet
         method for the host if applicable
 
@@ -179,7 +180,7 @@ class Flow(object):
         print("Flow", self.flow_id, ": sending acknowledgement packet",
             packet.packet_id)
         a_packet = make_acknowledgement_packet(packet.packet_id, packet.src,
-            packet.dest, packet.packet_size, acknowledge_id, new_id)
+            packet.dest, packet.packet_size, self.num_packets)
 
         event = lambda: self.src.send_packet(packet)
         self.ns.add_event(event)
