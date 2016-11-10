@@ -1,5 +1,6 @@
 from node import Node
 from routingpacket import RoutingPacket
+from constants import *
 
 class Router(Node):
     """A class that will represent routers.
@@ -68,8 +69,7 @@ class Router(Node):
         for _, link in links:
             src = self.node_id
             dest = link.get_other_node_id(self.node_id)
-            packet = RoutingPacket(None, src, dest, 1024, None, 
-                self.routing_table)
+            packet = RoutingPacket(None, src, dest, None, self.routing_table)
             event = lambda: link.add_packet(packet, self.node_id)
             ns.add_event(event)
 
