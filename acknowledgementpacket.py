@@ -7,7 +7,7 @@ class AcknowledgementPacket(Packet):
     Attributes:
         packet_id (int): Unique id identifying the packet
         src (string): The flow's source node id
-        dest (string): The flow's destination node
+        dest (string): The flow's destination node id
         flow_id (string): Unique id indicating flow
     """
 
