@@ -118,7 +118,7 @@ class Link(object):
             
             if self.cur_packet == None:
                 event = lambda: self.start_packet_transfer()
-                self.ns.add_event(event, 0.0)
+                self.ns.add_event(event)
         else:
             print "Link with id %s is full so packet with \
             id %s is dropped" % (self.link_id, packet.packet_id)
@@ -156,7 +156,7 @@ class Link(object):
         
         """ 
         event = lambda: self.cur_destination.recieve_packet(self.cur_packet)
-        self.ns.add_event(event, 0.0)
+        self.ns.add_event(event)
         
         print "Link %s finishing transfering packet %s. Handing to node %s" \
         %(self.link_id, self.cur_packet.packet_id, self.cur_direction.node_id)        
@@ -166,5 +166,5 @@ class Link(object):
         
         if len(self.link_buffer) > 0:
             event = lambda: self.start_packet_transfer()
-            self.ns.add_event(event, 0.0)
+            self.ns.add_event(event)
   
