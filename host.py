@@ -51,7 +51,7 @@ class Host(Node):
 
         """
         event = lambda: self._link.add_packet(packet, self.node_id)
-        description = "Link.add_packet() with packet id =", packet.packet_id
+        description = "Link.add_packet() with packet %d" % packet.packet_id
         self.ns.add_event(event, description)
 
     def receive_packet(self, packet, link_id):
@@ -65,5 +65,5 @@ class Host(Node):
         """
         assert packet.flow_id in self.flows
         event = lambda: self.flows[packet.flow_id].receive_packet(packet)
-        description = "Flow.receive_packet() with packet id =", packet.packet_id
+        description = "Flow.receive_packet() with packet %d" % packet.packet_id
         self.ns.add_event(event, description)
