@@ -1,5 +1,5 @@
 from node import Node
-from routingpacket import RoutingPacket
+from packet import RoutingPacket
 
 class Router(Node):
     """A class that will represent routers.
@@ -93,7 +93,18 @@ class Router(Node):
 
         # Check if we should update the routing table
         changed = False
-        cost = self.links[link_id].prop_delay
+        link = self.links[link_id]
+        
+        static_cost = link.prop_delay
+        
+        # how long for all packets in the buffer to complete action on the link
+        prop_cost = link.prop_delay * (link.num_packets)
+        trans_cost = link.cur_buffer_size / link.capacity
+        dynamic_cost = prop_cost + trans_cost
+        
+        cost = static_cost + dynamic_cost
+        
+        # should cost += prop delay to consider prop delay on the next packet?
 
         for node_id, link_info in routing_packet.routing_table.iteritems():
             if node_id not in self.routing_table or \
