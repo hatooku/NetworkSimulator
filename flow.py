@@ -109,8 +109,10 @@ class Flow(object):
         delay (float): delay until sending packets. Should only be used for
             initial send.
         """
-        while (len(self.unacknowledged_packets) < self.window_size):
-            if (len(self.timed_out_packets) > 0):
+        while len(self.unacknowledged_packets) < self.window_size:
+            # I'm confused because window size doesn't change?
+            self.ns.record_window_size(self.flow_id, self.window_size)
+            if len(self.timed_out_packets) > 0:
                 packet_id = min(self.timed_out_packets)
                 self.create_packet(packet_id, delay)
                 self.timed_out_packets.remove(packet_id)
@@ -142,6 +144,8 @@ class Flow(object):
         event1_message = "flow.create_packet: Flow" + str(self.flow_id) + \
             ": made data packet " + str(new_packet.packet_id)
         self.ns.add_event(event1, event1_message, delay=delay)
+        self.ns.record_packet_send_time(self.flow_id, new_packet.packet_id)
+        self.ns.record_flow_rate(self.flow_id, new_packet.packet_size)
 
         event2 = lambda: self.time_out(new_packet.packet_id)
         event2_message = "flow.create_packet: Adding to time_out_packets, packet " + \
@@ -179,6 +183,7 @@ class Flow(object):
         if isinstance(packet, DataPacket):
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
+            self.ns.record_packet_ack_time(self.flow_id, packet.packet_id)
             self.update_flow(packet)
 
     def acknowledge(self, packet):
