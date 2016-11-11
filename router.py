@@ -1,5 +1,5 @@
 from node import Node
-from routingpacket import RoutingPacket
+from packet import RoutingPacket
 
 class Router(Node):
     """A class that will represent routers.
