@@ -90,11 +90,18 @@ class Router(Node):
             routing_packet (Packet): The routing packet we received.
 
         """
-
         # Check if we should update the routing table
         changed = False
-        cost = self.links[link_id].prop_delay
-
+        link = self.links[link_id]
+        static_cost = link.prop_delay
+        
+        # how long for all packets in the buffer to complete action on the link
+        prop_cost = link.prop_delay * (link.num_packets)
+        trans_cost = link.cur_buffer_size / link.capacity
+        dynamic_cost = prop_cost + trans_cost
+        
+        cost = static_cost + dynamic_cost
+        
         for node_id, link_info in routing_packet.routing_table.iteritems():
             if node_id not in self.routing_table or \
                 link_info[1] + cost < self.routing_table[node_id][1]:
