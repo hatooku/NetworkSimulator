@@ -208,6 +208,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_rate = self.window_rate(time, data)
+                    avg_rate = np.around(avg_rate, 2)
                     plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '-')
                     legend_labels.append(flow_id)
                     
@@ -225,13 +226,13 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_rate = self.window_rate(time, data)
-                   
-                    plt.plot(avg_time, avg_rate, 'o')
+                    avg_rate = np.around(avg_rate, 2)
+                    plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '-')
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
         plt.xlabel('time (s)')
-        plt.ylabel('link rate (bps)')
+        plt.ylabel('link rate (Mbps)')
         plt.title("Link Rate")
         plt.show()
 
