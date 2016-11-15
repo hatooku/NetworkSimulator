@@ -251,7 +251,7 @@ class NetworkSimulator(object):
         """Clears all network data."""
         self.flows = {}
         self.links = {}
-        self.routers = {}
+        self.nodes = {}
         self.hosts = {}
 
         self.pq = []
