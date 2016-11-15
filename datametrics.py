@@ -190,7 +190,7 @@ class DataMetrics(object):
                 all_data = np.array(self.buffer_occupancy[link_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data, 100)
+                    avg_time, avg_data = self.window_average(time, data)
                     plt.plot(avg_time, avg_data, '-')
                     legend_labels.append(link_id)
                     
@@ -207,7 +207,7 @@ class DataMetrics(object):
                 all_data = np.array(self.flow_rate[flow_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_rate = self.window_rate(time, data, 200)
+                    avg_time, avg_rate = self.window_rate(time, data)
                     plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '-')
                     legend_labels.append(flow_id)
                     
@@ -217,39 +217,24 @@ class DataMetrics(object):
         plt.title("Flow Rate")
         plt.show()
 
-    def plot_flow_packet_delay(self):
-        legend_names = []
+    def plot_flow_packet_delay(self, flows=None):
+        legend_labels = []
         for flow_id in self.flow_rate:
-            data = self.flow_packet_delay[flow_id]
-            time_arr = []
-            flow_delay_arr = []
-
-            interval_size = len(data) / 200
-
-            num_intervals = int(np.ceil(len(data) * 1.0 / interval_size))
-
-            for i in range(num_intervals):
-                sum_delay = 0.0
-                sum_time = 0.0
-                num_data = 0
-
-                for j in range(interval_size):
-                    if i * interval_size + j < len(data):
-                        time, delay = data[i * interval_size + j]
-                        sum_delay += delay
-                        sum_time += time
-                        num_data += 1
-
-                time_arr.append(sum_time / num_data)
-                flow_delay_arr.append(sum_delay / num_data)
-
-            plt.plot(time_arr, flow_delay_arr, 'o')
-            legend_names.append(flow_id)
-
-        plt.legend(legend_names)
+            if flows is None or flow_id in links:
+                all_data = np.array(self.flow_packet_delay[flow_id])
+                if len(all_data) > 0:
+                    time, data = np.array(zip(*all_data))
+                    avg_time, avg_data = self.window_average(time, data)
+                    plt.plot(avg_time, avg_data * S_TO_MS, '-')
+                    legend_labels.append(flow_id)
+                    
+        plt.legend(legend_labels)
+        plt.xlabel('time (s)')
+        plt.ylabel('packet delay (ms)')
+        plt.title("Flow Packet Delay")
         plt.show()
 
-    def window_average(self, time, data, window_size):
+    def window_average(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
         # leave out last few elements that don't fit into a full window
         end = window_size * int(len(data)/window_size)
         reshaped_time = time[:end].reshape(-1, window_size)
@@ -258,7 +243,7 @@ class DataMetrics(object):
         avg_data = np.mean(reshaped_data, axis=1)
         return avg_time, avg_data
 
-    def window_rate(self, time, data, window_size):
+    def window_rate(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
         # leave out last few elements that don't fit into a full window
         end = window_size * int(len(data)/window_size)
         reshaped_time = time[:end].reshape(-1, window_size)
