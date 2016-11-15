@@ -1,8 +1,5 @@
 import sys
-from packet import Packet
-from datapacket import DataPacket
-from acknowledgementpacket import AcknowledgementPacket
-from routingpacket import RoutingPacket
+from packet import Packet, DataPacket, RoutingPacket, AcknowledgementPacket
 from constants import *
 import math
 
@@ -85,6 +82,9 @@ class Flow(object):
                 back from host
         """
         if a_packet.packet_id in self.unacknowledged_packets:
+            # Log packet acknowledgement
+            self.ns.record_packet_ack_time(self.flow_id, a_packet.packet_id)
+
             self.unacknowledged_packets.remove(a_packet.packet_id)
             self.check_flow_completion()
             self.send_packets()
@@ -109,8 +109,8 @@ class Flow(object):
         delay (float): delay until sending packets. Should only be used for
             initial send.
         """
-        while (len(self.unacknowledged_packets) < self.window_size):
-            if (len(self.timed_out_packets) > 0):
+        while len(self.unacknowledged_packets) < self.window_size:
+            if len(self.timed_out_packets) > 0:
                 packet_id = min(self.timed_out_packets)
                 self.create_packet(packet_id, delay)
                 self.timed_out_packets.remove(packet_id)

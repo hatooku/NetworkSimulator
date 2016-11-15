@@ -290,16 +290,6 @@ class NetworkSimulator(object):
         """
         self.data_metrics.update_link_rate(link_id, amt_sent, self.cur_time)
 
-    def record_flow_rate(self, flow_id, amt_sent):
-        """Records a flow rate data point.
-
-        Args:
-            flow_id (str): the flow id of the flow this point belongs to.
-            amt_sent (float): num of bits sent by the flow at cur_time.
-
-        """
-        self.data_metrics.update_flow_rate(flow_id, amt_sent, self.cur_time)
-
     def record_window_size(self, flow_id, window_size):
         """Records a window size data point.
 
@@ -310,15 +300,17 @@ class NetworkSimulator(object):
         """
         self.data_metrics.update_window_size(flow_id, window_size, self.cur_time)
 
-    def record_packet_send_time(self, flow_id, packet_id):
+    def record_packet_send(self, flow_id, packet_id, amt_sent):
         """Records a packet being sent.
 
         Args:
             flow_id (str): the flow id of the flow the packet belongs to.
             packet_id (str): the packet id of the packet this point belongs to.
+            amt_sent (float): num of bits sent by the flow at cur_time.
 
         """
         self.data_metrics.update_packet_send_time(flow_id, packet_id, self.cur_time)
+        self.data_metrics.update_flow_rate(flow_id, amt_sent, self.cur_time)
 
     def record_packet_ack_time(self, flow_id, packet_id):
         """Records a packet being acknowledged.

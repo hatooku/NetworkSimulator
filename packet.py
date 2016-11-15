@@ -16,8 +16,8 @@ class Packet(object):
         self._packet_id = packet_id
         self._src = src
         self._dest = dest
-        self.packet_size = packet_size
-        self.flow_id = flow_id
+        self._packet_size = packet_size
+        self._flow_id = flow_id
 
     @property
     def packet_id(self):
@@ -42,3 +42,66 @@ class Packet(object):
     @dest.setter
     def dest(self, dest):
         raise AttributeError("Cannot modify a packet's destination node.")
+
+    @property
+    def packet_size(self):
+        return self._packet_size
+
+    @packet_size.setter
+    def packet_size(self, packet_size):
+        raise AttributeError("Cannot modify a packet's size.")
+
+    @property
+    def flow_id(self):
+        return self._flow_id
+
+    @flow_id.setter
+    def flow_id(self, flow_id):
+        raise AttributeError("Cannot modify a packet's flow id.")
+
+class DataPacket(Packet):
+    """A class that will represent data packets.
+
+    Attributes:
+        packet_id (string): Unique id identifying the packet
+        src (string): The flow's source node id
+        dest (string): The flow's destination node id
+        flow_id (string): Unique id indicating flow
+        data (string): Data string being stored in the packet in bits
+    """
+
+    def __init__(self, packet_id, src, dest, flow_id, data=""):
+        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id)
+        self.data = data
+
+class RoutingPacket(Packet):
+    """A class that will represent routing table packets.
+
+    Attributes:
+        packet_id (string): Unique id identifying the packet
+        src (string): The flow's source node id
+        dest (string): The flow's destination node id
+        flow_id (string): Unique id indicating flow
+        routing_table (dict): Routing table
+    """
+
+    def __init__(self, packet_id, src, dest, flow_id, routing_table):
+        Packet.__init__(self, packet_id, src, dest, ROUT_PACKET_SIZE, flow_id)
+        self.routing_table = routing_table
+
+class AcknowledgementPacket(Packet):
+    """A class that will represent acknowledgement packets.
+
+    Attributes:
+        packet_id (int): Unique id identifying the packet
+        src (string): The flow's source node id
+        dest (string): The flow's destination node id
+        flow_id (string): Unique id indicating flow
+    """
+
+    def __init__(self, packet_id, src, dest, flow_id):
+        Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id)
+
+
+
+    

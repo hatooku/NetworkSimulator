@@ -163,7 +163,7 @@ class DataMetrics(object):
         if (flow_id, packet_id) not in self.flow_packet_sent_time:
             raise Exception("Packet send time not set for packet %s "
                             "in flow %s" % (packet_id, flow_id))
-        rtt = time - self.flow_packet_sent_time([flow_id, packet_id])
+        rtt = time - self.flow_packet_sent_time[(flow_id, packet_id)]
         self._update_flow_packet_delay(flow_id, rtt, time)
 
     def _update_flow_packet_delay(self, flow_id, packet_delay, time):
@@ -176,9 +176,9 @@ class DataMetrics(object):
 
         """
         if flow_id not in self.flow_packet_delay:
-            self.flow_packet_delay = []
+            self.flow_packet_delay[flow_id] = []
         data_point = (time, packet_delay)
-        self.flow_packet_delay[flow_id] = data_point
+        self.flow_packet_delay[flow_id].append(data_point)
 
     def plot_buffer_occupancy(self):
         legend_names = []

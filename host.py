@@ -1,4 +1,5 @@
 from node import Node
+from packet import DataPacket
 
 class Host(Node):
     """A class that will represent hosts.
@@ -50,6 +51,13 @@ class Host(Node):
             packet (Packet): The packet to send.
 
         """
+        # Log send packet
+        flow_id = packet.flow_id
+        packet_id = packet.packet_id
+        packet_size = packet.packet_size
+        if isinstance(packet, DataPacket):
+            self.ns.record_packet_send(flow_id, packet_id, packet_size)
+
         event = lambda: self._link.add_packet(packet, self.node_id)
         description = "Link.add_packet() with packet %d" % packet.packet_id
         self.ns.add_event(event, description)
