@@ -207,6 +207,7 @@ class Link(object):
                              self.link_id))
         
         self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
+       
         
         self._cur_packet = None
         self._cur_destination = None
