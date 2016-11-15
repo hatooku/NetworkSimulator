@@ -266,7 +266,7 @@ class NetworkSimulator(object):
 
         Args:
             link_id (str): the link id of the link this point belongs to.
-            buffer_occupancy (float): buffer_occupancy of the link at cur_time.
+            buffer_occupancy (int): number of packets in the link buffer at cur_time.
 
         """
         self.data_metrics.update_buffer_occupancy(link_id, buffer_occupancy, self.cur_time)
