@@ -80,7 +80,7 @@ class NetworkSimulator(object):
         host = Host(self, host_id)
         self.nodes[host_id] = host
 
-    def add_router(self, router_id, links):
+    def add_router(self, router_id):
         """Adds a new router to the network.
 
         Args:
@@ -160,7 +160,7 @@ class NetworkSimulator(object):
 
         for router in network.get("routers", []):
             router_id = router["id"]
-            self.add_router(router_id, [])
+            self.add_router(router_id)
             print "Router %s added to network." % router_id
 
         for link in network["links"]:
@@ -251,7 +251,7 @@ class NetworkSimulator(object):
         """Clears all network data."""
         self.flows = {}
         self.links = {}
-        self.routers = {}
+        self.nodes = {}
         self.hosts = {}
 
         self.pq = []
