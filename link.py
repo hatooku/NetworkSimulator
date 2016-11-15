@@ -8,6 +8,7 @@ class Link(object):
         link_id (string): a unique identifier for each link
         max_buffer_size (float): how many bits can be stored in the link buffer
         cur_buffer_size (float): how many bits are in the link buffer
+        num_packets (int): stores how many packets are in the buffer
         prop_delay (float): propagation delay of the link in s
         capacity (float): the maximum link rate in bits / s
         nodes (array): an array of the 2 nodes connected with this link
@@ -23,6 +24,7 @@ class Link(object):
         self._link_id = link_id
         self._max_buffer_size = max_buffer_size
         self._cur_buffer_size = 0.0
+        self._num_packets = 0
 
         self._prop_delay = prop_delay
         self._capacity = capacity
@@ -34,6 +36,7 @@ class Link(object):
         self.link_buffer = deque()
         self._cur_packet = None
         self._cur_destination = None
+        
         
     @property
     def link_id(self):
@@ -59,6 +62,14 @@ class Link(object):
     def cur_buffer_size(self, new_buffer_size):
         raise AttributeError("Cannot modify current buffer size")
     
+    @property
+    def num_packets(self):
+        return self._num_packets
+        
+    @num_packets.setter
+    def num_packets(self, value):
+        raise AttributeError("Number of packets in buffer should not be" 
+        "changed externally")    
     @property
     def prop_delay(self):
         return self._prop_delay
@@ -143,7 +154,8 @@ class Link(object):
             destination = self._get_other_node(node_id)
             self.link_buffer.append((packet, destination))
             self._cur_buffer_size += packet.packet_size
-            self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
+            self._num_packets += 1
+            self.ns.record_buffer_occupancy(self.link_id, self.num_packets)
             
             if self.cur_packet is None:
                 self._cur_packet, self._cur_destination = self.link_buffer.popleft()
@@ -167,7 +179,8 @@ class Link(object):
             self._cur_packet, self._cur_destination = self.link_buffer.popleft()
         
         self._cur_buffer_size -= self.cur_packet.packet_size
-        self.ns.record_buffer_occupancy(self.link_id, self.cur_buffer_size)
+        self._num_packets -= 1
+        self.ns.record_buffer_occupancy(self.link_id, self.num_packets)
         
         trans_delay = self.cur_packet.packet_size / self.capacity
         time_to_pass = self.prop_delay + trans_delay
@@ -190,7 +203,8 @@ class Link(object):
         event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
         self.ns.add_event(event, "Host.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
-                          % (cur_destination.node_id, cur_packet.packet_id, self.link_id))
+                          % (cur_destination.node_id, cur_packet.packet_id, 
+                             self.link_id))
         
         self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
         
