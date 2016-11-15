@@ -252,7 +252,6 @@ class NetworkSimulator(object):
         self.flows = {}
         self.links = {}
         self.nodes = {}
-        self.hosts = {}
 
         self.pq = []
         # self.data = DataMetrics()

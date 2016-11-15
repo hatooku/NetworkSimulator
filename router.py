@@ -1,4 +1,5 @@
 from node import Node
+from host import Host
 from packet import RoutingPacket
 
 class Router(Node):
@@ -72,12 +73,13 @@ class Router(Node):
 
     def send_routing_packets(self):
         """Sends out the routing table to all of the router's links."""
-
         for link in self.links.itervalues():
             src = self.node_id
             dest = link.get_other_node_id(self.node_id)
+            if dest[0] == "H":
+                continue
             packet = RoutingPacket(-1, src, dest, None, self.routing_table)
-            event = lambda: link.add_packet(packet, self.node_id)
+            event = lambda link=link, packet=packet: link.add_packet(packet, self.node_id)
             description = "Link.add_packet() with routing packet from %s to %s" \
                 % (src, dest)
             self.ns.add_event(event, description)
