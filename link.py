@@ -170,31 +170,22 @@ class Link(object):
             
 
             if not self.is_transmitting:
-                if len(self.cur_packets) == 0:
+                print self.is_transmitting, self.num_packets_transmitting, "1"
+                if len(self.cur_packets) == 0 or destination == self.cur_destination:
                     event = lambda: self.start_packet_transmission()
                     self.ns.add_event(event, "Link.start_packet_transmission with"
                               " link_id = %s" % (self.link_id))
                     self._is_transmitting = True
-                elif destination == self.cur_destination:
-                    event = lambda: self.start_packet_transmission()
-                    self.ns.add_event(event, "Link.start_packet_transmission() with"
-                              " link_id = %s" % (self.link_id))
-                    self._is_transmitting = True
+                    self.num_packets_transmitting += 1
         else:
             print "Link %s is full; packet %s is dropped." \
                 % (self.link_id, packet.packet_id)
             self.ns.record_packet_loss(self.link_id)
     
     def start_packet_transmission(self):
-        if self.num_packets_transmitting != 0:
-            print self.link_id
-            temp = self.link_buffer.popleft()
-            print temp[0].packet_id
-            print self.num_packets_transmitting
-            print self.ns.cur_time
-            assert self.num_packets_transmitting == 0
+        print self.is_transmitting, self.num_packets_transmitting, "2"
+        assert self.num_packets_transmitting == 1
         
-        self.num_packets_transmitting += 1
         temp = self.link_buffer.popleft()
 
         self._cur_packets.append(temp[0])
@@ -206,29 +197,16 @@ class Link(object):
 
         event = lambda: self.start_packet_transfer()
         trans_delay = packet_size / self.capacity
-        if self.cur_destination == None:
-            self._cur_destination = temp[1]
-            self.ns.add_event(event, "Link.start_packet_transfer() with"
-                              " link_id = %s" % (self.link_id), trans_delay)
+        total_delay = trans_delay
+        # if the direction isn't the same, we have to wait for the previous packet to propagte
+        # and for this packet to transmit before we start transfering it.
+        if self.cur_destination is not None and temp[1] != self.cur_destination:
+            total_delay += self.prop_delay
+        self.ns.add_event(event, "Link.start_packet_transfer() with"
+                              " link_id = %s" % (self.link_id), total_delay)
 
-            if len(self.link_buffer) > 0:
-                event = lambda: self.start_packet_transmission()
-                self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
-                              % (self.link_id), trans_delay)
-
-        elif temp[1] == self.cur_destination:
-            self.ns.add_event(event, "Link.start_packet_transfer() with"
-                              " link_id = %s" % (self.link_id), trans_delay)
-
-            if len(self.link_buffer) > 0:
-                event = lambda: self.start_packet_transmission()
-                self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
-                              % (self.link_id), trans_delay)
-        else:
-            # if the direction isn't the same, we have to wait for the previous packet to propagte
-            # and for this packet to transmit before we start transfering it.
-            self.ns.add_event(event, "Link.start_packet_transfer() with"
-                              " link_id = %s" % (self.link_id), trans_delay + self.prop_delay)
+        assert self._cur_destination is None or self._cur_destination == temp[1]
+        self._cur_destination = temp[1]
 
 
     def start_packet_transfer(self):
@@ -238,11 +216,25 @@ class Link(object):
         node. Sets the current packet and current destination of the link. 
         
         """
+        print self.is_transmitting, self.num_packets_transmitting, "3"
         self._is_transmitting = False
         self.num_packets_transmitting -= 1
+        print self.is_transmitting, self.num_packets_transmitting, "4"
         event = lambda: self.finish_packet_transfer()
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
                           " link_id = %s" % self.link_id, self.prop_delay)
+
+        assert self.cur_destination is not None
+
+        if len(self.link_buffer) > 0:
+            next_packet = self.link_buffer[0]
+            if next_packet[1] == self.cur_destination:
+                print self.is_transmitting, self.num_packets_transmitting, "A"
+                event = lambda: self.start_packet_transmission()
+                self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
+                              % (self.link_id))
+                self._is_transmitting = True
+                self.num_packets_transmitting += 1
    
     def finish_packet_transfer(self):
         """Hand off the packet it to the node it was going to. 
@@ -269,6 +261,10 @@ class Link(object):
             self._cur_destination = None
         
         if len(self.link_buffer) > 0 and not self.is_transmitting:
+            self._is_transmitting = True
+            self.num_packets_transmitting += 1
             event = lambda: self.start_packet_transmission()
             self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
                           % (self.link_id))
+            print self.is_transmitting, self.num_packets_transmitting, "5"
+        print self.is_transmitting, self.num_packets_transmitting, "6"
