@@ -26,17 +26,13 @@ class Router(Node):
             links (Link []): An array of links to add to the router.
 
         """
+
         for link in links:
             # Add the link to the link dictionary.
             self.links[link.link_id] = link
 
-            # Add the link to the routing table.
-            node_id = link.get_other_node_id(self.node_id)
-            self.routing_table[node_id] = (link, link.prop_delay)
-
-        # Send out routing packets to update all the other router's routing 
-        # tables.
-        self.send_routing_packets()
+        # Start dynamic routing
+        self.dynamic_routing()
 
     def send_packet(self, packet):
         """Sends a packet to another node.
@@ -73,14 +69,16 @@ class Router(Node):
 
     def send_routing_packets(self):
         """Sends out the routing table to all of the router's links."""
+
         for link in self.links.itervalues():
             src = self.node_id
             dest = link.get_other_node_id(self.node_id)
             if dest[0] == "H":
                 continue
             packet = RoutingPacket(-1, src, dest, None, self.routing_table)
-            event = lambda link=link, packet=packet: link.add_packet(packet, self.node_id)
-            description = "Link.add_packet() with routing packet from %s to %s" \
+            event = lambda link=link, packet=packet: \
+                link.add_packet(packet, self.node_id)
+            description = "Link.add_packet() with routing packet from %s to %s"\
                 % (src, dest)
             self.ns.add_event(event, description)
 
@@ -90,19 +88,15 @@ class Router(Node):
 
         Args:
             routing_packet (Packet): The routing packet we received.
+            link_id (string): The link id of the link the packet is on.
 
         """
+
         # Check if we should update the routing table
         changed = False
         link = self.links[link_id]
-        static_cost = link.prop_delay
         
-        # how long for all packets in the buffer to complete action on the link
-        prop_cost = link.prop_delay * (link.num_packets)
-        trans_cost = link.cur_buffer_size / link.capacity
-        dynamic_cost = prop_cost + trans_cost
-        
-        cost = static_cost + dynamic_cost
+        cost = self.get_link_cost(link)
         
         for node_id, link_info in routing_packet.routing_table.iteritems():
             if node_id not in self.routing_table or \
@@ -115,3 +109,43 @@ class Router(Node):
         # If we do update the routing table, send out routing packets
         if changed:
             self.send_routing_packets()
+
+    def get_link_cost(self, link):
+        """Returns the cost of a link.
+
+        Args:
+            link (Link): The link we want to find the cost of.
+
+        """
+
+        static_cost = link.prop_delay
+        
+        # how long for all packets in the buffer to complete action on the link
+        prop_cost = link.prop_delay * (link.num_packets)
+        trans_cost = link.cur_buffer_size / link.capacity
+        dynamic_cost = prop_cost + trans_cost
+
+        cost = static_cost + dynamic_cost
+
+        return cost
+
+    def update_adj_links(self):
+        """Updates the routing table using the dynamic costs of the router's 
+        links.
+
+        """
+
+        for link in self.links.itervalues():
+            # Update the cost of the link in the routing table.
+            node_id = link.get_other_node_id(self.node_id)
+            self.routing_table[node_id] = (link, self.get_link_cost(link))
+
+    def dynamic_routing(self):
+        """Adds an event to update the routing table every so often."""
+
+        self.update_adj_links()
+        self.send_routing_packets()
+
+        event = lambda: self.dynamic_routing()
+        description = "Router %s starting dynamic routing" % self.node_id
+        self.ns.add_event(event, description, delay=10)
