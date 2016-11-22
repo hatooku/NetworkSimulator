@@ -80,8 +80,8 @@ class Router(Node):
                 continue
             packet = RoutingPacket(-1, src, dest, None, self.routing_table)
             event = lambda link=link, packet=packet: link.add_packet(packet, self.node_id)
-            description = "Link.add_packet() with routing packet from %s to %s" \
-                % (src, dest)
+            description = "Link.add_packet() with routing packet on link %s from %s to %s" \
+                % (link.link_id, src, dest)
             self.ns.add_event(event, description)
 
     def update_routing_table(self, routing_packet, link_id):
@@ -98,7 +98,7 @@ class Router(Node):
         static_cost = link.prop_delay
         
         # how long for all packets in the buffer to complete action on the link
-        prop_cost = link.prop_delay * (link.num_packets)
+        prop_cost = link.prop_delay * (len(link.link_buffer))
         trans_cost = link.cur_buffer_size / link.capacity
         dynamic_cost = prop_cost + trans_cost
         
