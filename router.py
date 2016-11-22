@@ -32,7 +32,7 @@ class Router(Node):
             self.links[link.link_id] = link
 
         # Start dynamic routing
-        self.dynamic_routing()
+        self.ns.dynamic_routing()
 
     def send_packet(self, packet):
         """Sends a packet to another node.
@@ -42,6 +42,7 @@ class Router(Node):
 
         """
 
+        assert self.routing_table[packet.dest][1] < float('inf')
         # Use the routing table to send a packet to the right node
         link = self.routing_table[packet.dest][0]
 
@@ -102,8 +103,7 @@ class Router(Node):
             if node_id not in self.routing_table or \
                 link_info[1] + cost < self.routing_table[node_id][1]:
 
-                self.routing_table[node_id] = (self.links[link_id],
-                    link_info[1] + cost)
+                self.routing_table[node_id] = (link, link_info[1] + cost)
                 changed = True
 
         # If we do update the routing table, send out routing packets
@@ -140,12 +140,7 @@ class Router(Node):
             node_id = link.get_other_node_id(self.node_id)
             self.routing_table[node_id] = (link, self.get_link_cost(link))
 
-    def dynamic_routing(self):
-        """Adds an event to update the routing table every so often."""
-
-        self.update_adj_links()
-        self.send_routing_packets()
-
-        event = lambda: self.dynamic_routing()
-        description = "Router %s starting dynamic routing" % self.node_id
-        self.ns.add_event(event, description, delay=10)
+        for node_id, link_info in self.routing_table.iteritems():
+            link = link_info[0]
+            if link not in self.links.values():
+                self.routing_table[node_id] = (link, float('inf'))
