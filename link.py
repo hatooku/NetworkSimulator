@@ -13,8 +13,9 @@ class Link(object):
         capacity (float): the maximum link rate in bits / s
         nodes (array): an array of the 2 nodes connected with this link
         link_buffer (Deque): stores packets waiting to be sent on this link
-        cur_packet (Packet): stores the packet being sent on the link
+        cur_packets (arr[Packet]): stores the packet being sent on the link
         cur_destination (Node): stores where to send this packet
+        is_transmitting (Bool): we can only transmit one packet at a time
         
     """
 
@@ -28,14 +29,16 @@ class Link(object):
 
         self._prop_delay = prop_delay
         self._capacity = capacity
+        self._is_transmitting = False
         
         if len(nodes) != 2:
             raise AttributeError("Node array should contain two nodes")
         self.nodes = nodes
         
         self.link_buffer = deque()
-        self._cur_packet = None
+        self._cur_packets = deque()
         self._cur_destination = None
+        self.num_packets_transmitting = 0
         
         
     @property
@@ -87,10 +90,10 @@ class Link(object):
         raise AttributeError("Cannot modify link's capacity")
     
     @property
-    def cur_packet(self):
-        return self._cur_packet
+    def cur_packets(self):
+        return self._cur_packets
     
-    @cur_packet.setter
+    @cur_packets.setter
     def cur_packet(self, value):
         raise AttributeError("Current packet should not be changed externally")
     
@@ -100,7 +103,16 @@ class Link(object):
     
     @cur_destination.setter
     def cur_destination(self, value):
-        raise AttributeError("Current destination cannot be changed externally")    
+        raise AttributeError("Current destination cannot be changed externally") 
+
+    @property
+    def is_transmitting(self):
+        return self._is_transmitting
+    
+    @is_transmitting.setter
+    def is_transmiting(self, value):
+        raise AttributeError("Transmitting status cannot be changed externally")    
+   
 
     def _get_other_node(self, node_id):
         """Finds the node that node with id node_id is linked to.
@@ -156,16 +168,69 @@ class Link(object):
             self._num_packets += 1
             self.ns.record_buffer_occupancy(self.link_id, self.num_packets)
             
-            if self.cur_packet is None:
-                self._cur_packet, self._cur_destination = self.link_buffer.popleft()
-                event = lambda: self.start_packet_transfer()
-                self.ns.add_event(event, "Link.start_packet_transfer() with"
-                          " link_id = %s" % (self.link_id))
+
+            if not self.is_transmitting:
+                if len(self.cur_packets) == 0:
+                    event = lambda: self.start_packet_transmission()
+                    self.ns.add_event(event, "Link.start_packet_transmission with"
+                              " link_id = %s" % (self.link_id))
+                    self._is_transmitting = True
+                elif destination == self.cur_destination:
+                    event = lambda: self.start_packet_transmission()
+                    self.ns.add_event(event, "Link.start_packet_transmission() with"
+                              " link_id = %s" % (self.link_id))
+                    self._is_transmitting = True
         else:
             print "Link %s is full; packet %s is dropped." \
                 % (self.link_id, packet.packet_id)
             self.ns.record_packet_loss(self.link_id)
     
+    def start_packet_transmission(self):
+        if self.num_packets_transmitting != 0:
+            print self.link_id
+            temp = self.link_buffer.popleft()
+            print temp[0].packet_id
+            print self.num_packets_transmitting
+            print self.ns.cur_time
+            assert self.num_packets_transmitting == 0
+        
+        self.num_packets_transmitting += 1
+        temp = self.link_buffer.popleft()
+
+        self._cur_packets.append(temp[0])
+        packet_size = temp[0].packet_size
+        self._cur_buffer_size -= packet_size
+
+        self._num_packets -= 1
+        self.ns.record_buffer_occupancy(self.link_id, self.num_packets)
+
+        event = lambda: self.start_packet_transfer()
+        trans_delay = packet_size / self.capacity
+        if self.cur_destination == None:
+            self._cur_destination = temp[1]
+            self.ns.add_event(event, "Link.start_packet_transfer() with"
+                              " link_id = %s" % (self.link_id), trans_delay)
+
+            if len(self.link_buffer) > 0:
+                event = lambda: self.start_packet_transmission()
+                self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
+                              % (self.link_id), trans_delay)
+
+        elif temp[1] == self.cur_destination:
+            self.ns.add_event(event, "Link.start_packet_transfer() with"
+                              " link_id = %s" % (self.link_id), trans_delay)
+
+            if len(self.link_buffer) > 0:
+                event = lambda: self.start_packet_transmission()
+                self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
+                              % (self.link_id), trans_delay)
+        else:
+            # if the direction isn't the same, we have to wait for the previous packet to propagte
+            # and for this packet to transmit before we start transfering it.
+            self.ns.add_event(event, "Link.start_packet_transfer() with"
+                              " link_id = %s" % (self.link_id), trans_delay + self.prop_delay)
+
+
     def start_packet_transfer(self):
         """Send a packet
         
@@ -173,20 +238,11 @@ class Link(object):
         node. Sets the current packet and current destination of the link. 
         
         """
-        if self.cur_destination is None:
-            assert self.cur_packet is None
-            self._cur_packet, self._cur_destination = self.link_buffer.popleft()
-        
-        self._cur_buffer_size -= self.cur_packet.packet_size
-        self._num_packets -= 1
-        self.ns.record_buffer_occupancy(self.link_id, self.num_packets)
-        
-        trans_delay = self.cur_packet.packet_size / self.capacity
-        time_to_pass = self.prop_delay + trans_delay
-        
+        self._is_transmitting = False
+        self.num_packets_transmitting -= 1
         event = lambda: self.finish_packet_transfer()
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
-                          " link_id = %s" % self.link_id, time_to_pass)
+                          " link_id = %s" % self.link_id, self.prop_delay)
    
     def finish_packet_transfer(self):
         """Hand off the packet it to the node it was going to. 
@@ -197,20 +253,22 @@ class Link(object):
         packet will be sent.
         
         """
+        assert len(self.cur_packets) > 0
+        assert self.cur_destination != None
         cur_destination = self.cur_destination
-        cur_packet = self.cur_packet
+        cur_packet = self.cur_packet.popleft()
         event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
         self.ns.add_event(event, "Host.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
                           % (cur_destination.node_id, cur_packet.packet_id, 
                              self.link_id))
         
-        self.ns.record_link_rate(self.link_id, self.cur_packet.packet_size)
+        self.ns.record_link_rate(self.link_id, cur_packet.packet_size)
         
-        self._cur_packet = None
-        self._cur_destination = None
+        if len(self.cur_packets) == 0:
+            self._cur_destination = None
         
-        if len(self.link_buffer) > 0:
-            event = lambda: self.start_packet_transfer()
-            self.ns.add_event(event, "Link.send_packet() with link_id = %s" \
+        if len(self.link_buffer) > 0 and not self.is_transmitting:
+            event = lambda: self.start_packet_transmission()
+            self.ns.add_event(event, "Link.start_packet_transmission() with link_id = %s" \
                           % (self.link_id))
