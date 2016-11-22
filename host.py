@@ -1,5 +1,5 @@
 from node import Node
-from packet import DataPacket
+from packet import DataPacket, RoutingPacket
 
 class Host(Node):
     """A class that will represent hosts.
@@ -71,6 +71,7 @@ class Host(Node):
             link_id (string): The link id of the link the packet is on.
             
         """
+        assert not isinstance(packet, RoutingPacket)
         assert packet.flow_id in self.flows
         event = lambda: self.flows[packet.flow_id].receive_packet(packet)
         description = "Flow.receive_packet() with packet %d" % packet.packet_id

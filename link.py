@@ -148,7 +148,6 @@ class Link(object):
             node_id (string): the id of the node sending the packet 
             
         """  
-        
         if self.cur_buffer_size + packet.packet_size <= self.max_buffer_size:
             
             destination = self._get_other_node(node_id)
