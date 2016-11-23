@@ -200,7 +200,7 @@ class Link(object):
         cur_destination = self.cur_destination
         cur_packet = self.cur_packet
         event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
-        self.ns.add_event(event, "Host.receive_packet() with node_id = %s, "
+        self.ns.add_event(event, "Node.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
                           % (cur_destination.node_id, cur_packet.packet_id, 
                              self.link_id))
