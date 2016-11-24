@@ -247,21 +247,6 @@ class NetworkSimulator(object):
         heapq.heappush(self.pq, event)
         self._event_counter += 1
 
-    def dynamic_routing(self):
-        """Adds an event to update the routing table every so often."""
-
-        for node in self.nodes.itervalues():
-            if isinstance(node, Router):
-                node.update_adj_links()
-
-        for node in self.nodes.itervalues():
-            if isinstance(node, Router):
-                node.send_routing_packets()
-
-        event = lambda: self.dynamic_routing()
-        description = "Starting dynamic routing"
-        self.add_event(event, description, delay=100)
-
     def clear_network(self):
         """Clears all network data."""
         self.flows = {}
