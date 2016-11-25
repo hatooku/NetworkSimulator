@@ -165,7 +165,6 @@ class Link(object):
             if len(self.link_buffer) == 1 and not self.is_transmitting:
                 if len(self.packets_in_route) == 0 or \
                     destination == self.cur_destination:
-                   
                     event = lambda: self.start_packet_transmission()
                     self.ns.add_event(event, "Link.start_packet_transmission"
                               " with link_id = %s" % (self.link_id))
@@ -201,7 +200,6 @@ class Link(object):
             total_delay += self.prop_delay
         self.ns.add_event(event, "Link.start_packet_propagation() with"
                               " link_id = %s" % (self.link_id), total_delay)
-
         assert self._cur_destination is None \
                 or self._cur_destination == packet_info[1]
         self._cur_destination = packet_info[1]
@@ -227,7 +225,6 @@ class Link(object):
         if len(self.link_buffer) > 0:
             next_packet = self.link_buffer[0]
             if next_packet[1] == self.cur_destination:
-               
                 event = lambda: self.start_packet_transmission()
                 self.ns.add_event(event, "Link.start_packet_transmission()"
                  " with link_id = %s" % (self.link_id))
@@ -266,6 +263,8 @@ class Link(object):
         
         if len(self.link_buffer) > 0 and not self.is_transmitting:
             self._is_transmitting = True
+            # Next packet can go in either direction
+            self._cur_destination = None
             event = lambda: self.start_packet_transmission()
             self.ns.add_event(event, "Link.start_packet_transmission() with" 
                 "link_id = %s" % (self.link_id))
