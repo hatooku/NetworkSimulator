@@ -92,7 +92,7 @@ class Router(Node):
         event = lambda: self.send_routing_packets()
         description = "Router.send_routing_packets on router %s" % self.node_id
         self.ns.add_event(event, description)
-        
+
         next_cycle_event = lambda: self.start_routing_cycle()
         next_description = \
             "Router.start_routing_cycle on router %s" % self.node_id
@@ -175,7 +175,7 @@ class Router(Node):
             # Compare best link in the cost table with routing table entry
             if node_id not in self.routing_table or \
                self.routing_table[node_id] != (min_link, min_cost):
-
+                #print "Changed, t =", self.ns.cur_time
                 changed = True
                 self.routing_table[node_id] = (min_link, min_cost)
 
@@ -192,7 +192,7 @@ class Router(Node):
         static_cost = link.prop_delay
         
         # how long for all packets in the buffer to complete action on the link
-        prop_cost = link.prop_delay * (link.num_packets)
+        prop_cost = link.prop_delay * len(link.link_buffer)
         trans_cost = link.cur_buffer_size / link.capacity
         dynamic_cost = prop_cost + trans_cost
 
