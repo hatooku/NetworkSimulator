@@ -132,7 +132,7 @@ class Flow(object):
 
         """
         new_packet = DataPacket(packet_id, self.src.node_id,
-            self.dest.node_id, self.flow_id)
+            self.dest.node_id, self.flow_id, self.ns.cur_time)
 
 
         self.unacknowledged_packets.add(new_packet.packet_id)
@@ -161,7 +161,7 @@ class Flow(object):
             flow_id (string): Unique id indicating flow
 
         """
-        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
+        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id, self.ns.cur_time)
 
         event = lambda: self.src.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
