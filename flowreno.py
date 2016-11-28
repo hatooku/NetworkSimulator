@@ -30,6 +30,11 @@ class FlowReno(Flow):
         if self.duplicate_counter > 3:
             self.window_size += 1
 
+    def duplicate_ack(self):
+        self.duplicate_counter += 1
+        if self.duplicate_counter > 3:
+            self.window_size += 1
+
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
 
