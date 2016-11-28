@@ -24,6 +24,11 @@ class FlowReno(Flow):
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
 
+    def duplicate_ack(self):
+        self.duplicate_counter += 1
+        if self.duplicate_counter > 3:
+            self.window_size += 1
+
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
 
@@ -31,10 +36,10 @@ class FlowReno(Flow):
 
         """
         self.ssthreshold = max(self.window_size / 2.0, 1)
+        assert(self.duplicate_counter == 3)
         self.window_size = self.ssthreshold + self.duplicate_counter
         self.fast_recovery = True
         self.ns.record_window_size(self.flow_id, self.window_size)
-
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the

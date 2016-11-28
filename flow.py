@@ -99,9 +99,9 @@ class Flow(object):
         """Method that updates window size after a timeout.
 
         Sets threshold to half of current window size and retransmits lost packet.
-        
+
         """
-        self.ssthreshold = self.window_size / 2.0
+        self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
 
@@ -109,9 +109,9 @@ class Flow(object):
         """Method that updates window size during fast retransmit.
 
         Sets threshold to half of current window size and retransmits lost packet.
-        
+
         """
-        self.ssthreshold = self.window_size / 2.0
+        self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
 
@@ -119,6 +119,9 @@ class Flow(object):
         self.unacknowledged_packets = \
             {packet_id for packet_id in self.unacknowledged_packets \
             if packet_id >= self.first_unacknowledged}
+
+    def duplicate_ack(self):
+        self.duplicate_counter += 1
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
@@ -137,15 +140,14 @@ class Flow(object):
             self.check_flow_completion()
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
-            self.duplicate_counter += 1
+            self.duplicate_ack()
+
             self.send_packets()
 
             if self.duplicate_counter == 3:
                 self.update_fast_retransmit_window_size()
                 self.unacknowledged_packets.remove(self.first_unacknowledged)
                 self.create_packet(self.first_unacknowledged)
-                self.unacknowledged_packets.clear()
-                self.send_packets()
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
