@@ -24,13 +24,17 @@ class FlowReno(Flow):
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
 
-    def update_loss_window_size(self):
-        """Method that updates window size, and is called after a packet loss
-        occurs.  Sets threshold to half of current window size, retransmits
-        lost packet, and removes that packet from the unacknowledged packets.
+    def update_fast_retransmit_window_size(self):
+        """Method that updates window size during fast retransmit.
+
+        Sets threshold to half of current window size and retransmits lost packet.
+
         """
+        self.ssthreshold = max(self.window_size / 2.0, 1)
+        self.window_size = self.ssthreshold + self.duplicate_counter
         self.fast_recovery = True
-        self.ssthreshold = self.window_size / 2.0
+        self.ns.record_window_size(self.flow_id, self.window_size)
+
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -41,11 +45,7 @@ class FlowReno(Flow):
         """
         cur = self.first_unacknowledged
 
-        effective_window_size = self.window_size
-        if self.fast_recovery:
-            effective_window_size = self.window_size + self.duplicate_counter
-
-        while len(self.unacknowledged_packets) < int(effective_window_size) and cur < self.num_packets:
+        while len(self.unacknowledged_packets) < int(self.window_size) and cur < self.num_packets:
             if cur not in self.unacknowledged_packets:
                 self.create_packet(cur, delay)
             cur += 1
