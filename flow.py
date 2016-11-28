@@ -16,8 +16,6 @@ class Flow(object):
         start_time (float): Start time in seconds
         unacknowledged_packets (set): The list of packets with no 
             acknowledgement
-        timed_out_packets (set): The list of packets timed out before 
-            acknowledgement
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
         duplicate_counter (int): Count number of times a duplicate packet is
@@ -46,6 +44,7 @@ class Flow(object):
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
 
+        self.ns.record_window_size(self.flow_id, self.window_size)
         self.send_packets(self.start_time)
 
     @property

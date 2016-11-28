@@ -221,7 +221,7 @@ class DataMetrics(object):
                    
                     avg_time, avg_rate = self.window_rate(time, data)
                     avg_rate = np.around(avg_rate, 2)
-                    plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '-')
+                    plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '.')
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -293,8 +293,8 @@ class DataMetrics(object):
                 all_data = np.array(self.window_size[flow_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data, '-')
+                    #avg_time, avg_data = self.window_average(time, data)
+                    plt.plot(time, data, '.')
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
