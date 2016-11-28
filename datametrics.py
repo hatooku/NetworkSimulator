@@ -26,9 +26,6 @@ class DataMetrics(object):
         flow_packet_delay (dict): holds roundtrip time data for each flow
             The key is the flow_id and the value is an array of
             (time of acknowledgement, roundtrip time) tuples.
-        flow_packet_sent_time (dict): holds data on when each packet was sent,
-            to be used for calculating the roundtrip time. The key is the
-            (flow_id, packet_id) and the value is the sent time.
 
     """
 
@@ -39,7 +36,6 @@ class DataMetrics(object):
         self.flow_rate = {}
         self.window_size = {}
         self.flow_packet_delay = {}
-        self.flow_packet_sent_time = {}
 
     def update_buffer_occupancy(self, link_id, buffer_occupancy, time):
         """Add a buffer occupancy data point, or modify a previously added
@@ -141,34 +137,7 @@ class DataMetrics(object):
         data_point = (time, prev_window_size + window_size)
         self.window_size[flow_id].append(data_point)
 
-    def update_packet_send_time(self, flow_id, packet_id, time):
-        """Record the most recent time a packet was sent, for use in
-        calculating the roundtrip time.
-
-        Args:
-            flow_id (str): the id of the flow that the packet belongs to.
-            packet_id (int): the id of the packet being sent.
-            time (float): the time the packet was last sent.
-
-        """
-        self.flow_packet_sent_time[(flow_id, packet_id)] = time
-        """
-    def update_packet_rtt_time(self, rtt, time):
-        Records the acknowledgement of a packet, for use in
-        calculating the roundtrip time.
-
-        Args:
-            flow_id (str): the id of the flow that the packet belongs to.
-            packet_id (int): the id of the packet being sent.
-            time (float): the time the packet was acknowledged.
-
-        
-        if (flow_id, packet_id) not in self.flow_packet_sent_time:
-            raise Exception("Packet send time not set for packet %s "
-                            "in flow %s" % (packet_id, flow_id))
-        rtt = time - self.flow_packet_sent_time[(flow_id, packet_id)]
-        self._update_flow_packet_delay(flow_id, rtt, time)
-        """
+    
     def record_flow_packet_delay(self, flow_id, packet_delay, time):
         """Records the roundtrip time for a packet in a flow.
 

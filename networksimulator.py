@@ -308,7 +308,6 @@ class NetworkSimulator(object):
             amt_sent (float): num of bits sent by the flow at cur_time.
 
         """
-        self.data_metrics.update_packet_send_time(flow_id, packet_id, self.cur_time)
         self.data_metrics.update_flow_rate(flow_id, amt_sent, self.cur_time)
 
     def record_packet_rtt_time(self, flow_id, rtt):
