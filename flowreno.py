@@ -23,6 +23,7 @@ class FlowReno(Flow):
             self.window_size += 1.0
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
+        self.ns.record_window_size(self.flow_id, self.window_size)
 
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
