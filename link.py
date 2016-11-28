@@ -191,7 +191,11 @@ class Link(object):
         propagating the packet after the transmission delay. 
             
         """
+
         packet_info = self.link_buffer.popleft()
+
+        assert self._cur_destination is None \
+                or self._cur_destination == packet_info[1]
 
         self._packets_in_route.append(packet_info[0])
         packet_size = packet_info[0].packet_size
@@ -201,16 +205,10 @@ class Link(object):
 
         event = lambda: self.start_packet_propagation()
         trans_delay = packet_size / self.capacity
-        total_delay = trans_delay
         
-        if self.cur_destination is not None \
-            and packet_info[1] != self.cur_destination:
-
-            total_delay += self.prop_delay
         self.ns.add_event(event, "Link.start_packet_propagation() with"
-                              " link_id = %s" % (self.link_id), total_delay)
-        assert self._cur_destination is None \
-                or self._cur_destination == packet_info[1]
+                              " link_id = %s" % (self.link_id), trans_delay)
+        
         self._cur_destination = packet_info[1]
 
 
@@ -268,7 +266,6 @@ class Link(object):
             next_packet_info = self.link_buffer[0]
             next_destination = next_packet_info[1]
 
-            if self.cur_destination is None or \
-               self.cur_destination == next_destination:
+            if self.cur_destination is None:
                 self.schedule_next_transmission()
     
