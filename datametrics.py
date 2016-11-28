@@ -272,30 +272,6 @@ class DataMetrics(object):
         plt.title("Flow Packet Delay")
         plt.show()
 
-    def plot_flow_window_size(self, flows=None):
-        """Plots the window size of flows in the simulation.
-
-        Args:
-            flows (arr[Flow]): if flows is given, only the flows in the array
-            will be plotted.
-
-        """
-        legend_labels = []
-        for flow_id in self.flow_rate:
-            if flows is None or flow_id in links:
-                all_data = np.array(self.window_size[flow_id])
-                if len(all_data) > 0:
-                    time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data, '-')
-                    legend_labels.append(flow_id)
-                    
-        plt.legend(legend_labels)
-        plt.xlabel('time (s)')
-        plt.ylabel('Window Size (packets)')
-        plt.title("Flow Window Size")
-        plt.show()
-
     def window_average(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
         # leave out last few elements that don't fit into a full window
         end = window_size * int(len(data)/window_size)
@@ -313,3 +289,19 @@ class DataMetrics(object):
         avg_time = np.mean(reshaped_time, axis=1)
         window_data = np.sum(reshaped_data, axis=1)
         return avg_time, window_data
+
+    def window_rate(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
+        # leave out last few elements that don't fit into a full window
+
+        # if there are less than window_size points, window size is set to 2
+        if len(data) < window_size: 
+         window_size = 2
+        end = window_size * int(len(data)/window_size)
+        reshaped_time = time[:end].reshape(-1, window_size)
+        reshaped_data = data[:end].reshape(-1, window_size)
+
+        sum_data = np.sum(reshaped_data, axis=1)
+        delta_t = np.apply_along_axis(lambda t: t[-1] - t[0], 1, reshaped_time)
+        avg_rate = sum_data * 1.0 / delta_t
+        avg_time = np.mean(reshaped_time, axis=1)
+        return avg_time, avg_rate
