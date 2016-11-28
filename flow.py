@@ -23,8 +23,6 @@ class Flow(object):
         canceled_timeouts (list): Contains packet time outs that need to be
             cancelled
         ssthreshold (float): The slow-start threshold
-        fast_recovery (bool): Indicates whether or not the flow has entered
-            fast recovery mode
 
     """
 

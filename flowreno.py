@@ -5,6 +5,29 @@ from flow import Flow
 import math
 
 class FlowReno(Flow):
+    """A flow class that represents active connections between
+    hosts and routers.  Implements TCP tahoe congestion control.
+
+    Attributes:
+        ns (NetworkSimulator): Instance of the NetworkSimulator class
+        flow_id (string): Unique id identifying the flow
+        src (Node): The flow's source node id
+        dest (Node): The flow's destination node id
+        data_amount (float): Data capacity of the flow (bits)
+        start_time (float): Start time in seconds
+        unacknowledged_packets (set): The list of packets with no acknowledgement
+        first_unacknowledged (float): Id of first packet that hasn't been acknowledged
+        num_packets (float):  Number of packets to be sent through the flow
+        window_size (float): The size of the window
+        duplicate_counter (int): Count number of times a duplicate packet is
+            received
+        canceled_timeouts (list): Contains packet time outs that need to be
+            cancelled
+        ssthreshold (float): The slow-start threshold
+        fast_recovery (bool): Indicates whether or not the flow has entered
+            fast recovery mode
+
+    """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time):
         self.fast_recovery = False
