@@ -95,10 +95,21 @@ class Flow(object):
             self.window_size += 1.0 / math.floor(self.window_size)
             self.ns.record_window_size(self.flow_id, self.window_size)
 
-    def update_loss_window_size(self):
-        """Method that updates window size, and is called after a packet loss
-        occurs.  Sets threshold to half of current window size, retransmits
-        lost packet, and removes that packet from the unacknowledged packets.
+    def update_timeout_window_size(self):
+        """Method that updates window size after a timeout.
+
+        Sets threshold to half of current window size and retransmits lost packet.
+        
+        """
+        self.ssthreshold = self.window_size / 2.0
+        self.window_size = 1.0
+        self.ns.record_window_size(self.flow_id, self.window_size)
+
+    def update_fast_retransmit_window_size(self):
+        """Method that updates window size during fast retransmit.
+
+        Sets threshold to half of current window size and retransmits lost packet.
+        
         """
         self.ssthreshold = self.window_size / 2.0
         self.window_size = 1.0
@@ -130,7 +141,7 @@ class Flow(object):
             self.send_packets()
 
             if self.duplicate_counter == 3:
-                self.update_loss_window_size()
+                self.update_fast_retransmit_window_size()
                 self.unacknowledged_packets.remove(self.first_unacknowledged)
                 self.create_packet(self.first_unacknowledged)
                 self.unacknowledged_packets.clear()
@@ -149,7 +160,7 @@ class Flow(object):
         if packet_id in self.canceled_timeouts:
             self.canceled_timeouts.remove(packet_id)
         elif packet_id in self.unacknowledged_packets:
-            self.update_loss_window_size()
+            self.update_timeout_window_size()
             self.unacknowledged_packets.clear()
             self.send_packets()
 
