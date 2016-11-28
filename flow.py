@@ -37,6 +37,7 @@ class Flow(object):
         self.num_packets_sent = 0
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = window_size
+        self.sent_packets = []
 
         self.send_packets(start_time)
 
