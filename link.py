@@ -164,16 +164,24 @@ class Link(object):
 
             if len(self.link_buffer) == 1 and not self.is_transmitting:
                 if len(self.packets_in_route) == 0 or \
-                    destination == self.cur_destination:
-                   
-                    event = lambda: self.start_packet_transmission()
-                    self.ns.add_event(event, "Link.start_packet_transmission"
-                              " with link_id = %s" % (self.link_id))
-                    self._is_transmitting = True
+                   destination == self.cur_destination:
+
+                    self.schedule_next_transmission()
         else:
             print "Link %s is full; packet %s is dropped." \
                 % (self.link_id, packet.packet_id)
             self.ns.record_packet_loss(self.link_id)
+
+    def schedule_next_transmission(self):
+        """Adds the next packet transmission event to the global queue."""
+
+        assert not self.is_transmitting
+        self._is_transmitting = True
+
+        event = lambda: self.start_packet_transmission()
+        description = "Link.start_packet_transmission with link_id = %s" \
+            % (self.link_id)
+        self.ns.add_event(event, description)
     
     def start_packet_transmission(self):
         """Transmit a packet into the link
@@ -201,7 +209,6 @@ class Link(object):
             total_delay += self.prop_delay
         self.ns.add_event(event, "Link.start_packet_propagation() with"
                               " link_id = %s" % (self.link_id), total_delay)
-
         assert self._cur_destination is None \
                 or self._cur_destination == packet_info[1]
         self._cur_destination = packet_info[1]
@@ -225,20 +232,10 @@ class Link(object):
         assert self.cur_destination is not None
 
         if len(self.link_buffer) > 0:
-            next_packet = self.link_buffer[0]
-            if next_packet[1] == self.cur_destination:
-               
-                event = lambda: self.start_packet_transmission()
-                self.ns.add_event(event, "Link.start_packet_transmission()"
-                 " with link_id = %s" % (self.link_id))
-                self._is_transmitting = True
-            else:
-                # if the direction isn't the same, we have to wait for the 
-                # previous packet to propagate before we transmit the next packet.
-                event = lambda: self.start_packet_transmission()
-                self.ns.add_event(event, "Link.start_packet_transmission()"
-                 "with link_id = %s" % (self.link_id), self.prop_delay)
-                self._is_transmitting = True
+            next_packet_info = self.link_buffer[0]
+            next_destination = next_packet_info[1]
+            if next_destination == self.cur_destination:
+                self.schedule_next_transmission()
    
     def finish_packet_transfer(self):
         """Hand off the packet to the node it was going to. 
@@ -254,19 +251,24 @@ class Link(object):
         cur_destination = self.cur_destination
         cur_packet = self.packets_in_route.popleft()
         event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
-        self.ns.add_event(event, "Host.receive_packet() with node_id = %s, "
+        self.ns.add_event(event, "Node.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
                           % (cur_destination.node_id, cur_packet.packet_id, 
                              self.link_id))
         
         self.ns.record_link_rate(self.link_id, cur_packet.packet_size)
         
-        if len(self.packets_in_route) == 0:
+        # If there are no links being transmitted or propagated,
+        # set current destination to None.
+        if not self.is_transmitting and len(self.packets_in_route) == 0:
             self._cur_destination = None
-        
+
+        # Start transmitting next packet buffer if applicable.
         if len(self.link_buffer) > 0 and not self.is_transmitting:
-            self._is_transmitting = True
-            event = lambda: self.start_packet_transmission()
-            self.ns.add_event(event, "Link.start_packet_transmission() with" 
-                "link_id = %s" % (self.link_id))
+            next_packet_info = self.link_buffer[0]
+            next_destination = next_packet_info[1]
+
+            if self.cur_destination is None or \
+               self.cur_destination == next_destination:
+                self.schedule_next_transmission()
     
