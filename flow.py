@@ -38,6 +38,9 @@ class Flow(object):
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = window_size
 
+        # Destination
+        self.unreceived_packets = [i for i in range(num_packets)]
+
         self.send_packets(start_time)
 
     @property
@@ -149,19 +152,20 @@ class Flow(object):
         self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
 
 
-    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size):
+    def make_acknowledgement_packet(self, src, dest):
         """Method makes the AcknowledgementPacket and triggers the send_packet
         method for the host if applicable
 
         Args:
-            packet_id (int): Unique id identifying the packet
             src (Node): The packet's source node
             dest (Node): The packet's destination node
-            packet_size (float): The packet's size in bits
-            flow_id (string): Unique id indicating flow
 
         """
-        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
+        if len(self.unreceived_packets) > 0:
+            next_expected = self.unreceived_packets[0]
+        else:
+            next_expected = self.num_packets
+        new_packet = AcknowledgementPacket(next_expected, src, dest, self.flow_id)
 
         event = lambda: self.src.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
@@ -193,5 +197,8 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
-        self.make_acknowledgement_packet(packet.packet_id,
-            packet.dest, packet.src, packet.packet_size)
+
+        if packet.packet_id in self.unreceived_packets:
+            self.unreceived_packets.remove(packet.packet_id)
+
+        self.make_acknowledgement_packet(packet.dest, packet.src)
