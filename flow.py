@@ -122,17 +122,18 @@ class Flow(object):
         if a_packet.packet_id == self.first_unacknowledged:
             self.duplicate_counter += 1
             print(int(self.window_size), len(self.unacknowledged_packets))
-            assert(int(self.window_size) <= len(self.unacknowledged_packets))
+            #assert(int(self.window_size) <= len(self.unacknowledged_packets))
             self.send_packets()
         if self.duplicate_counter == 3:
             print("\n \n DUPLICATE: %d \n \n " %self.first_unacknowledged)
-            self.unacknowledged_packets.remove(self.first_unacknowledged)
-            assert(int(self.window_size) > len(self.unacknowledged_packets))
-            self.send_packets()
+            #assert(int(self.window_size) > len(self.unacknowledged_packets))
+
             self.update_loss_window_size()
+            self.create_packet(self.first_unacknowledged)
+            self.unacknowledged_packets.remove(self.first_unacknowledged)
+            #self.unacknowledged_packets.clear()
+            #self.send_packets()
             self.canceled_timeouts.append(self.first_unacknowledged)
-
-
 
     def time_out(self, packet_id):
         """Method where, if sent packet is still unacknowledged after a period
@@ -146,8 +147,8 @@ class Flow(object):
         if packet_id in self.canceled_timeouts:
             self.canceled_timeouts.remove(packet_id)
         elif packet_id in self.unacknowledged_packets:
-            self.unacknowledged_packets.clear()
             self.update_loss_window_size()
+            self.unacknowledged_packets.clear()
             self.send_packets()
             print("\n \n TIMEOUT \n \n ")
 
