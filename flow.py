@@ -5,7 +5,7 @@ import math
 
 class Flow(object):
     """A flow class that represents active connections between
-    hosts and routers.
+    hosts and routers.  Implements TCP tahoe congestion control.
 
     Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
@@ -13,19 +13,18 @@ class Flow(object):
         src (Node): The flow's source node id
         dest (Node): The flow's destination node id
         data_amount (float): Data capacity of the flow (bits)
-
         start_time (float): Start time in seconds
         unacknowledged_packets (set): The list of packets with no acknowledgement
-        timed_out_packets (set): The list of packets timed out before acknowledgement
-        num_packets_sent (float): Number of packets that have been sent through
-            the flow
+        first_unacknowledged (float): Id of first packet that hasn't been acknowledged
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
+        duplicate_counter (float): Count number of times a duplicate packet is
+            received
+        ssthreshold (float): The slow-start threshold
 
     """
 
-    def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        window_size=100):
+    def __init__(self, ns, flow_id, src, dest, data_amount, start_time):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
@@ -33,15 +32,15 @@ class Flow(object):
         self.data_amount = data_amount
         self.start_time = start_time
         self.unacknowledged_packets = set()
-        self.timed_out_packets = set()
-        self.num_packets_sent = 0
+        self.first_unacknowledged = 0.0
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
-        self.window_size = window_size
+        self.window_size = 1.0
+        self.ssthreshold = sys.float_info.max
 
         # Destination
         self.unreceived_packets = [i for i in range(num_packets)]
 
-        self.send_packets(start_time)
+        self.send_packets(self.start_time)
 
     @property
     def flow_id(self):
@@ -72,9 +71,41 @@ class Flow(object):
         updates the NetworkSimulator object accordingly.
 
         """
-        if len(self.unacknowledged_packets) == 0 and \
-            self.num_packets <= self.num_packets_sent:
+        if self.first_unacknowledged >= self.num_packets:
             self.ns.decrement_active_flows()
+
+    def slow_start(self):
+        if self.window_size < self.ssthreshold:
+            return true
+        else:
+            return false
+
+    def update_ack_window_size(self):
+        """Method that updates window size when a packet is acknowledged.
+        If the window size has reached the threshold, congestion avoidance will
+        be switched on.
+        """
+        if self.slow_start():
+            self.window_size += 1.0
+        else:
+            self.window_size += 1.0 / math.floor(self.window_size)
+
+    def update_loss_window_size(self, lost_packet_id, delay=0.0):
+        """Method that updates window size, and is called after a packet loss
+        occurs.  Sets threshold to half of current window size, retransmits
+        lost packet, and removes that packet from the unacknowledged packets.
+        """
+        self.ssthreshold = self.window_size / 2.0
+        self.window_size = 1.0
+
+        # DEAL WITH LATER
+        #self.create_packet(lost_packet_id, delay)
+        self.unacknowledged_packets.remove(lost_packet_id_id)
+
+    def clean_unacknowledged(self):
+        self.unacknowledged_packets = \
+            {packet_id for packet_id in self.unacknowledged_packets \
+            if packet_id >= self.first_unacknowledged}
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
@@ -84,26 +115,27 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        if a_packet.packet_id in self.unacknowledged_packets:
-            # Log packet acknowledgement
-            self.ns.record_packet_ack_time(self.flow_id, a_packet.packet_id)
+        self.update_ack_window_size()
 
-            self.unacknowledged_packets.remove(a_packet.packet_id)
-            self.check_flow_completion()
-            self.send_packets()
+        if packet.packet_id > self.first_unacknowledged:
+            self.first_unacknowledged = packet.packet_id
 
-    def time_out(self, packet_id):
-        """Method where sent packet is added to timed_out_packets array if
-        still unacknowledged after a period of time
+        self.clean_unacknowledged()
+        self.check_flow_completion()
+        self.send_packets()
+
+    def time_out(self, packet_id, delay=0.0):
+        """Method where, if sent packet is still unacknowledged after a period
+        of time, packet is considered lost.  Packet is then resent and window
+        size is updated.
 
         Args:
             packet_id (int): packet_id of packet being added to timed_out_packets
 
         """
         if packet_id in self.unacknowledged_packets:
-            self.timed_out_packets.add(packet_id)
-            self.unacknowledged_packets.remove(packet_id)
-            self.send_packets()
+            update_loss_window_size(self, lost_packet_id, delay=0.0)
+
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -112,16 +144,11 @@ class Flow(object):
         delay (float): delay until sending packets. Should only be used for
             initial send.
         """
-        while len(self.unacknowledged_packets) < self.window_size:
-            if len(self.timed_out_packets) > 0:
-                packet_id = min(self.timed_out_packets)
-                self.create_packet(packet_id, delay)
-                self.timed_out_packets.remove(packet_id)
-            elif self.num_packets_sent < self.num_packets:
-                self.create_packet(self.num_packets_sent, delay)
-                self.num_packets_sent += 1
-            else:
-                break
+        cur = self.first_unacknowledged
+        while len(self.unacknowledged_packets) < self.window_size and cur < self.num_packets:
+            if cur not in self.unacknowledged_packets:
+                self.create_packet(i, delay)
+            cur += 1
 
     def create_packet(self, packet_id, delay=0.0):
         """Method creates packet and then adds them to event queue to be sent
@@ -188,6 +215,9 @@ class Flow(object):
             assert packet.src == self.dest.node_id
             assert packet.dest == self.src.node_id
             self.update_flow(packet)
+
+
+
 
     def acknowledge(self, packet):
         """Method that triggers the send_packet function for the host if
