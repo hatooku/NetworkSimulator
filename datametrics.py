@@ -295,7 +295,7 @@ class DataMetrics(object):
 
         # if there are less than window_size points, window size is set to 2
         if len(data) < window_size: 
-         window_size = 2
+            window_size = 2
         end = window_size * int(len(data)/window_size)
         reshaped_time = time[:end].reshape(-1, window_size)
         reshaped_data = data[:end].reshape(-1, window_size)
