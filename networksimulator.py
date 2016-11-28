@@ -311,15 +311,15 @@ class NetworkSimulator(object):
         self.data_metrics.update_packet_send_time(flow_id, packet_id, self.cur_time)
         self.data_metrics.update_flow_rate(flow_id, amt_sent, self.cur_time)
 
-    def record_packet_ack_time(self, flow_id, packet_id):
+    def record_packet_rtt_time(self, flow_id, rtt):
         """Records a packet being acknowledged.
 
         Args:
             flow_id (str): the flow id of the flow the packet belongs to.
-            packet_id (str): the packet id of the packet this point belongs to.
+            rtt (float): the round trip time of a packet
 
         """
-        self.data_metrics.update_packet_ack_time(flow_id, packet_id, self.cur_time)
+        self.data_metrics.record_flow_packet_delay(flow_id, rtt, self.cur_time)
 
     def plot_metrics(self):
         """Plots all relevant metrics from DataMetrics."""

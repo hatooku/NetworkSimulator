@@ -108,7 +108,8 @@ class Router(Node):
             dest = link.get_other_node_id(self.node_id)
             if dest[0] == "H":
                 continue
-            packet = RoutingPacket(-1, src, dest, None, self.routing_table)
+            packet = RoutingPacket(-1, src, dest, None, self.routing_table, \
+                self.ns.cur_time)
             event = lambda link=link, packet=packet: \
                 link.add_packet(packet, self.node_id)
             description = "Link.add_packet() with routing packet from %s to %s"\

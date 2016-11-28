@@ -83,11 +83,13 @@ class Flow(object):
         """
         if a_packet.packet_id in self.unacknowledged_packets:
             # Log packet acknowledgement
-            self.ns.record_packet_ack_time(self.flow_id, a_packet.packet_id)
+            #self.ns.record_packet_ack_time(self.flow_id, a_packet.packet_id)
 
             self.unacknowledged_packets.remove(a_packet.packet_id)
             self.check_flow_completion()
             self.send_packets()
+        rtt = self.ns.cur_time - a_packet.timestamp
+        self.ns.record_packet_rtt_time(self.flow_id, rtt)
 
     def time_out(self, packet_id):
         """Method where sent packet is added to timed_out_packets array if
@@ -132,7 +134,7 @@ class Flow(object):
 
         """
         new_packet = DataPacket(packet_id, self.src.node_id,
-            self.dest.node_id, self.flow_id)
+            self.dest.node_id, self.flow_id, self.ns.cur_time)
 
 
         self.unacknowledged_packets.add(new_packet.packet_id)
@@ -149,7 +151,8 @@ class Flow(object):
         self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
 
 
-    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size):
+    def make_acknowledgement_packet(self, packet_id, src, dest, packet_size, \
+        timestamp):
         """Method makes the AcknowledgementPacket and triggers the send_packet
         method for the host if applicable
 
@@ -159,9 +162,11 @@ class Flow(object):
             dest (Node): The packet's destination node
             packet_size (float): The packet's size in bits
             flow_id (string): Unique id indicating flow
+            timestamp (float): time the packet to be acknowledged was sent
 
         """
-        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id)
+        new_packet = AcknowledgementPacket(packet_id, src, dest, self.flow_id, \
+            timestamp)
 
         event = lambda: self.src.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
@@ -190,4 +195,4 @@ class Flow(object):
 
         """
         self.make_acknowledgement_packet(packet.packet_id,
-            packet.src, packet.dest, packet.packet_size)
+            packet.src, packet.dest, packet.packet_size, packet.timestamp)
