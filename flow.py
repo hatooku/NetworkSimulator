@@ -18,8 +18,10 @@ class Flow(object):
         first_unacknowledged (float): Id of first packet that hasn't been acknowledged
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
-        duplicate_counter (float): Count number of times a duplicate packet is
+        duplicate_counter (int): Count number of times a duplicate packet is
             received
+        canceled_timeouts (list): Contains packet time outs that need to be
+            cancelled
         ssthreshold (float): The slow-start threshold
 
     """
@@ -35,10 +37,12 @@ class Flow(object):
         self.first_unacknowledged = 0.0
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = 1.0
+        self.duplicate_counter = 0
+        self.canceled_timeouts = []
         self.ssthreshold = sys.float_info.max
 
         # Destination
-        self.unreceived_packets = [i for i in range(num_packets)]
+        self.unreceived_packets = [i for i in range(self.num_packets)]
 
         self.send_packets(self.start_time)
 
@@ -75,10 +79,7 @@ class Flow(object):
             self.ns.decrement_active_flows()
 
     def slow_start(self):
-        if self.window_size < self.ssthreshold:
-            return true
-        else:
-            return false
+        return self.window_size < self.ssthreshold
 
     def update_ack_window_size(self):
         """Method that updates window size when a packet is acknowledged.
@@ -90,17 +91,13 @@ class Flow(object):
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
 
-    def update_loss_window_size(self, lost_packet_id, delay=0.0):
+    def update_loss_window_size(self):
         """Method that updates window size, and is called after a packet loss
         occurs.  Sets threshold to half of current window size, retransmits
         lost packet, and removes that packet from the unacknowledged packets.
         """
         self.ssthreshold = self.window_size / 2.0
         self.window_size = 1.0
-
-        # DEAL WITH LATER
-        #self.create_packet(lost_packet_id, delay)
-        self.unacknowledged_packets.remove(lost_packet_id_id)
 
     def clean_unacknowledged(self):
         self.unacknowledged_packets = \
@@ -115,16 +112,29 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        self.update_ack_window_size()
+        if a_packet.packet_id > self.first_unacknowledged:
+            self.update_ack_window_size()
+            self.first_unacknowledged = a_packet.packet_id
+            self.duplicate_counter = 0
+            self.clean_unacknowledged()
+            self.check_flow_completion()
+            self.send_packets()
+        if a_packet.packet_id == self.first_unacknowledged:
+            self.duplicate_counter += 1
+            print(int(self.window_size), len(self.unacknowledged_packets))
+            assert(int(self.window_size) <= len(self.unacknowledged_packets))
+            self.send_packets()
+        if self.duplicate_counter == 3:
+            print("\n \n DUPLICATE: %d \n \n " %self.first_unacknowledged)
+            self.unacknowledged_packets.remove(self.first_unacknowledged)
+            assert(int(self.window_size) > len(self.unacknowledged_packets))
+            self.send_packets()
+            self.update_loss_window_size()
+            self.canceled_timeouts.append(self.first_unacknowledged)
 
-        if packet.packet_id > self.first_unacknowledged:
-            self.first_unacknowledged = packet.packet_id
 
-        self.clean_unacknowledged()
-        self.check_flow_completion()
-        self.send_packets()
 
-    def time_out(self, packet_id, delay=0.0):
+    def time_out(self, packet_id):
         """Method where, if sent packet is still unacknowledged after a period
         of time, packet is considered lost.  Packet is then resent and window
         size is updated.
@@ -133,9 +143,13 @@ class Flow(object):
             packet_id (int): packet_id of packet being added to timed_out_packets
 
         """
-        if packet_id in self.unacknowledged_packets:
-            update_loss_window_size(self, lost_packet_id, delay=0.0)
-
+        if packet_id in self.canceled_timeouts:
+            self.canceled_timeouts.remove(packet_id)
+        elif packet_id in self.unacknowledged_packets:
+            self.unacknowledged_packets.clear()
+            self.update_loss_window_size()
+            self.send_packets()
+            print("\n \n TIMEOUT \n \n ")
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -145,9 +159,9 @@ class Flow(object):
             initial send.
         """
         cur = self.first_unacknowledged
-        while len(self.unacknowledged_packets) < self.window_size and cur < self.num_packets:
+        while len(self.unacknowledged_packets) < int(self.window_size) and cur < self.num_packets:
             if cur not in self.unacknowledged_packets:
-                self.create_packet(i, delay)
+                self.create_packet(cur, delay)
             cur += 1
 
     def create_packet(self, packet_id, delay=0.0):
@@ -163,7 +177,6 @@ class Flow(object):
         """
         new_packet = DataPacket(packet_id, self.src.node_id,
             self.dest.node_id, self.flow_id)
-
 
         self.unacknowledged_packets.add(new_packet.packet_id)
 
@@ -196,7 +209,7 @@ class Flow(object):
 
         event = lambda: self.src.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
-            str(self.flow_id) + ": made acknowledgment packet " + str(packet_id)
+            str(self.flow_id) + ": made acknowledgment packet " + str(next_expected)
         self.ns.add_event(event, event_message)
 
     def receive_packet(self, packet):
@@ -215,9 +228,6 @@ class Flow(object):
             assert packet.src == self.dest.node_id
             assert packet.dest == self.src.node_id
             self.update_flow(packet)
-
-
-
 
     def acknowledge(self, packet):
         """Method that triggers the send_packet function for the host if
