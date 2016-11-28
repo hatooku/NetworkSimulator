@@ -25,7 +25,7 @@ class Flow(object):
     """
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time,
-        window_size=10):
+        window_size=100):
         self.ns = ns
         self._flow_id = flow_id
         self._src = src
@@ -177,8 +177,12 @@ class Flow(object):
 
         """
         if isinstance(packet, DataPacket):
+            assert packet.src == self.src.node_id
+            assert packet.dest == self.dest.node_id
             self.acknowledge(packet)
         elif isinstance(packet, AcknowledgementPacket):
+            assert packet.src == self.dest.node_id
+            assert packet.dest == self.src.node_id
             self.update_flow(packet)
 
     def acknowledge(self, packet):
@@ -190,4 +194,4 @@ class Flow(object):
 
         """
         self.make_acknowledgement_packet(packet.packet_id,
-            packet.src, packet.dest, packet.packet_size)
+            packet.dest, packet.src, packet.packet_size)
