@@ -23,6 +23,8 @@ class Flow(object):
         canceled_timeouts (list): Contains packet time outs that need to be
             cancelled
         ssthreshold (float): The slow-start threshold
+        fast_recovery (bool): Indicates whether or not the flow has entered
+            fast recovery mode
 
     """
 
@@ -39,7 +41,7 @@ class Flow(object):
         self.window_size = 1.0
         self.duplicate_counter = 0
         self.canceled_timeouts = []
-        self.ssthreshold = sys.float_info.max
+        self.ssthreshold = 50
 
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
