@@ -15,8 +15,10 @@ class Flow(object):
         data_amount (float): Data capacity of the flow (bits)
 
         start_time (float): Start time in seconds
-        unacknowledged_packets (set): The list of packets with no acknowledgement
-        timed_out_packets (set): The list of packets timed out before acknowledgement
+        unacknowledged_packets (set): The list of packets with no 
+            acknowledgement
+        timed_out_packets (set): The list of packets timed out before 
+            acknowledgement
         num_packets_sent (float): Number of packets that have been sent through
             the flow
         num_packets (float):  Number of packets to be sent through the flow
@@ -82,9 +84,6 @@ class Flow(object):
                 back from host
         """
         if a_packet.packet_id in self.unacknowledged_packets:
-            # Log packet acknowledgement
-            #self.ns.record_packet_ack_time(self.flow_id, a_packet.packet_id)
-
             self.unacknowledged_packets.remove(a_packet.packet_id)
             self.check_flow_completion()
             self.send_packets()
