@@ -90,8 +90,10 @@ class Flow(object):
         """
         if self.slow_start():
             self.window_size += 1.0
+            self.ns.record_window_size(self.flow_id, self.window_size)
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
+            self.ns.record_window_size(self.flow_id, self.window_size)
 
     def update_loss_window_size(self):
         """Method that updates window size, and is called after a packet loss
@@ -100,6 +102,7 @@ class Flow(object):
         """
         self.ssthreshold = self.window_size / 2.0
         self.window_size = 1.0
+        self.ns.record_window_size(self.flow_id, self.window_size)
 
     def clean_unacknowledged(self):
         self.unacknowledged_packets = \
@@ -114,6 +117,7 @@ class Flow(object):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
+
         if a_packet.packet_id > self.first_unacknowledged:
             self.update_ack_window_size()
             self.first_unacknowledged = a_packet.packet_id
@@ -121,21 +125,17 @@ class Flow(object):
             self.clean_unacknowledged()
             self.check_flow_completion()
             self.send_packets()
-        if a_packet.packet_id == self.first_unacknowledged:
+        elif a_packet.packet_id == self.first_unacknowledged:
             self.duplicate_counter += 1
-            print(int(self.window_size), len(self.unacknowledged_packets))
-            #assert(int(self.window_size) <= len(self.unacknowledged_packets))
             self.send_packets()
-        if self.duplicate_counter == 3:
-            print("\n \n DUPLICATE: %d \n \n " %self.first_unacknowledged)
-            #assert(int(self.window_size) > len(self.unacknowledged_packets))
 
-            self.update_loss_window_size()
-            self.create_packet(self.first_unacknowledged)
-            self.unacknowledged_packets.remove(self.first_unacknowledged)
-            #self.unacknowledged_packets.clear()
-            #self.send_packets()
-            self.canceled_timeouts.append(self.first_unacknowledged)
+            if self.duplicate_counter == 3:
+                self.update_loss_window_size()
+                self.unacknowledged_packets.remove(self.first_unacknowledged)
+                self.create_packet(self.first_unacknowledged)
+                self.unacknowledged_packets.clear()
+                self.send_packets()
+                self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
         """Method where, if sent packet is still unacknowledged after a period
@@ -152,7 +152,6 @@ class Flow(object):
             self.update_loss_window_size()
             self.unacknowledged_packets.clear()
             self.send_packets()
-            print("\n \n TIMEOUT \n \n ")
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
@@ -204,6 +203,7 @@ class Flow(object):
             dest (Node): The packet's destination node
 
         """
+
         if len(self.unreceived_packets) > 0:
             next_expected = self.unreceived_packets[0]
         else:
@@ -240,7 +240,6 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
-
         if packet.packet_id in self.unreceived_packets:
             self.unreceived_packets.remove(packet.packet_id)
 
