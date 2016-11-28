@@ -1,0 +1,179 @@
+{
+    "network": {
+        "hosts": [
+            {
+                "id": "H0",
+                "link": "L4"
+            },
+            {
+                "id": "H1",
+                "link": "L7"
+            },
+            {
+                "id": "H2",
+                "link": "L0"
+            },
+            {
+                "id": "H3",
+                "link": "L5"
+            },
+            {
+                "id": "H4",
+                "link": "L6"
+            },
+            {
+                "id": "H5",
+                "link": "L8"
+            }
+        ],
+        "links": [
+            {
+                "id": "L0",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "H2",
+                    "R1"
+                ]
+            },
+            {
+                "id": "L1",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R1",
+                    "R2"
+                ]
+            },
+            {
+                "id": "L2",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R2",
+                    "R3"
+                ]
+            },
+            {
+                "id": "L3",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R3",
+                    "R4"
+                ]
+            },
+            {
+                "id": "L4",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R1",
+                    "H0"
+                ]
+            },
+            {
+                "id": "L5",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R2",
+                    "H3"
+                ]
+            },
+            {
+                "id": "L6",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R3",
+                    "H4"
+                ]
+            },
+            {
+                "id": "L7",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R4",
+                    "H1"
+                ]
+            },
+            {
+                "id": "L8",
+                "rate": 12.5,
+                "delay": 10,
+                "buffer_size": 128,
+                "nodes": [
+                    "R4",
+                    "H5"
+                ]
+            }
+        ],
+        "routers": [
+            {
+                "id": "R1",
+                "links": [
+                    "L0",
+					"L1",
+                    "L4"
+            	]
+            },
+			{
+                "id": "R2",
+                "links": [
+                    "L1",
+					"L2",
+                    "L5"
+				]
+            },
+			{
+                "id": "R3",
+                "links": [
+                    "L2",
+					"L3",
+                    "L6"
+				]
+            },
+			{
+                "id": "R4",
+                "links": [
+                    "L3",
+					"L7",
+                    "L8"
+				]
+			}
+        ],
+        "flows": [
+            {
+                "id": "F1",
+                "src": "H0",
+                "dest": "H1",
+                "data_amt": 35,
+                "starting_time": 0.5
+            },
+            {
+                "id": "F2",
+                "src": "H2",
+                "dest": "H3",
+                "data_amt": 15,
+                "starting_time": 10
+            },
+            {
+                "id": "F3",
+                "src": "H4",
+                "dest": "H5",
+                "data_amt": 30,
+                "starting_time": 20
+            }
+        ]
+    }
+}
