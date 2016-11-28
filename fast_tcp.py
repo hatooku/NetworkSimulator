@@ -1,4 +1,5 @@
 from flow import Flow
+from constants import *
 
 class FAST_TCP(Flow):
     """A flow class that represents active connections between
@@ -33,10 +34,10 @@ class FAST_TCP(Flow):
 
     """
 
-    WINDOW_UPDATE_PERIOD = .75
+    WINDOW_UPDATE_PERIOD = 20 * MS_TO_S
 
     def __init__(self, ns, flow_id, src, dest, data_amount, start_time, \
-        gamma=0.25, alpha=15):
+        gamma=0.5, alpha=15):
         Flow.__init__(self, ns, flow_id, src, dest, data_amount, start_time, window_size=1)
         self._gamma = gamma
         self._alpha = alpha
@@ -92,8 +93,6 @@ class FAST_TCP(Flow):
                 (1 - self.gamma) * self.window_size + \
                 self.gamma * (self.base_rtt / self.last_rtt * self.window_size \
                     + self.alpha))
-        else:
-            self.window_size *= 2
 
         self.send_packets()
         self.ns.record_window_size(self.flow_id, self.window_size)

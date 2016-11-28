@@ -155,6 +155,13 @@ class DataMetrics(object):
 
 
     def plot_buffer_occupancy(self, links=None):
+        """Plots the buffer occupancy of packets in link buffers.
+
+        Args:
+            links (arr[Link]): if links is given, only the links in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.buffer_occupancy:
             if links is None or link_id in links:
@@ -172,6 +179,13 @@ class DataMetrics(object):
         plt.show()
 
     def plot_flow_rate(self, flows=None):
+        """Plots the flow rate of flows in the simulation.
+
+        Args:
+            flows (arr[Flow]): if flows is given, only the flows in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for flow_id in self.flow_rate:
             if flows is None or flow_id in flows:
@@ -190,6 +204,13 @@ class DataMetrics(object):
         plt.show()
 
     def plot_link_rate(self, links=None):
+        """Plots the link rate of links in the simulation.
+
+        Args:
+            links (arr[Link]): if links is given, only the links in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.link_rate:
             if links is None or link_id in links:
@@ -210,13 +231,20 @@ class DataMetrics(object):
         plt.show()
 
     def plot_packet_loss(self, links=None):
+        """Plots the packet loss on each link in the simulation.
+
+        Args:
+            links (arr[Link]): if links is given, only the packets on links in 
+            the array will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.packet_loss:
             if links is None or link_id in links:
                 all_data = np.array(self.packet_loss[link_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_sum(time, data, 100)
+                    avg_time, avg_data = self.window_sum(time, data)
                     plt.plot(avg_time, avg_data, '-')
                     legend_labels.append(link_id)
                     
@@ -227,6 +255,14 @@ class DataMetrics(object):
         plt.show()
 
     def plot_flow_packet_delay(self, flows=None):
+        """Plots the round trip time of packets on each of the flows in the 
+        simulation.
+
+        Args:
+            flows (arr[Flow]): if flows is given, only the flows in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for flow_id in self.flow_rate:
             if flows is None or flow_id in links:
@@ -245,6 +281,13 @@ class DataMetrics(object):
 
 
     def plot_flow_window_size(self, flows=None):
+        """Plots the window size of flows in the simulation.
+
+        Args:
+            flows (arr[Flow]): if flows is given, only the flows in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for flow_id in self.flow_rate:
             if flows is None or flow_id in links:
@@ -259,39 +302,44 @@ class DataMetrics(object):
         plt.xlabel('time (s)')
         plt.ylabel('Window Size (packets)')
         plt.title("Flow Window Size")
-        plt.show()
+        plt.show() 
+
+
+    def prep_data(self, time, data, window_size):
+        reshaped_time = []
+        reshaped_data = []
+        cur_window = 0
+
+        times_in_window = []
+        data_in_window = []
+        for i in range(len(time)):
+            if time[i] > cur_window + window_size:
+                cur_window += window_size
+                reshaped_time.append(times_in_window)
+                reshaped_data.append(data_in_window)
+                times_in_window = []
+                data_in_window = []
+
+            times_in_window.append(time[i])
+            data_in_window.append(data[i])
+        return reshaped_time, reshaped_data
 
     def window_average(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-        avg_time = np.mean(reshaped_time, axis=1)
-        avg_data = np.mean(reshaped_data, axis=1)
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
+        avg_data = np.array([np.mean(a) for a in reshaped_data])
         return avg_time, avg_data
 
     def window_sum(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-        avg_time = np.mean(reshaped_time, axis=1)
-        window_data = np.sum(reshaped_data, axis=1)
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
+        window_data = np.array([np.sum(a) for a in reshaped_data])
         return avg_time, window_data
 
     def window_rate(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
-
-        # if there are less than window_size points, window size is set to 2
-        if len(data) < window_size: 
-            window_size = 2
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-
-        sum_data = np.sum(reshaped_data, axis=1)
-        delta_t = np.apply_along_axis(lambda t: t[-1] - t[0], 1, reshaped_time)
-        avg_rate = sum_data * 1.0 / delta_t
-        avg_time = np.mean(reshaped_time, axis=1)
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
+        sum_data = np.array([np.sum(a) for a in reshaped_data])
+        avg_rate = sum_data * 1.0 / window_size
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
         return avg_time, avg_rate
 
