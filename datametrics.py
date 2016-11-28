@@ -152,9 +152,9 @@ class DataMetrics(object):
 
         """
         self.flow_packet_sent_time[(flow_id, packet_id)] = time
-
-    def update_packet_ack_time(self, flow_id, packet_id, time):
-        """Records the acknowledgement of a packet, for use in
+        """
+    def update_packet_rtt_time(self, rtt, time):
+        Records the acknowledgement of a packet, for use in
         calculating the roundtrip time.
 
         Args:
@@ -162,14 +162,14 @@ class DataMetrics(object):
             packet_id (int): the id of the packet being sent.
             time (float): the time the packet was acknowledged.
 
-        """
+        
         if (flow_id, packet_id) not in self.flow_packet_sent_time:
             raise Exception("Packet send time not set for packet %s "
                             "in flow %s" % (packet_id, flow_id))
         rtt = time - self.flow_packet_sent_time[(flow_id, packet_id)]
         self._update_flow_packet_delay(flow_id, rtt, time)
-
-    def _update_flow_packet_delay(self, flow_id, packet_delay, time):
+        """
+    def record_flow_packet_delay(self, flow_id, packet_delay, time):
         """Records the roundtrip time for a packet in a flow.
 
         Args:
