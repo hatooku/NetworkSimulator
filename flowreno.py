@@ -23,6 +23,12 @@ class FlowReno(Flow):
             self.window_size += 1.0
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
+        self.ns.record_window_size(self.flow_id, self.window_size)
+
+    def duplicate_ack(self):
+        self.duplicate_counter += 1
+        if self.duplicate_counter > 3:
+            self.window_size += 1
 
     def duplicate_ack(self):
         self.duplicate_counter += 1

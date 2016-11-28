@@ -41,7 +41,7 @@ class Flow(object):
         self.window_size = 1.0
         self.duplicate_counter = 0
         self.canceled_timeouts = []
-        self.ssthreshold = 50
+        self.ssthreshold = sys.maxint
 
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
@@ -77,6 +77,7 @@ class Flow(object):
         updates the NetworkSimulator object accordingly.
 
         """
+
         if self.first_unacknowledged >= self.num_packets:
             self.ns.decrement_active_flows()
 
@@ -88,6 +89,7 @@ class Flow(object):
         If the window size has reached the threshold, congestion avoidance will
         be switched on.
         """
+
         if self.slow_start():
             self.window_size += 1.0
             self.ns.record_window_size(self.flow_id, self.window_size)
@@ -101,6 +103,7 @@ class Flow(object):
         Sets threshold to half of current window size and retransmits lost packet.
 
         """
+
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
@@ -111,6 +114,7 @@ class Flow(object):
         Sets threshold to half of current window size and retransmits lost packet.
 
         """
+
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
@@ -141,7 +145,6 @@ class Flow(object):
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
             self.duplicate_ack()
-
             self.send_packets()
 
             if self.duplicate_counter == 3:
