@@ -305,4 +305,3 @@ class DataMetrics(object):
         avg_rate = sum_data * 1.0 / delta_t
         avg_time = np.mean(reshaped_time, axis=1)
         return avg_time, avg_rate
-
