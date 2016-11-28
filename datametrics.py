@@ -279,7 +279,6 @@ class DataMetrics(object):
         plt.title("Flow Packet Delay")
         plt.show()
 
-
     def plot_flow_window_size(self, flows=None):
         """Plots the window size of flows in the simulation.
 
@@ -294,7 +293,7 @@ class DataMetrics(object):
                 all_data = np.array(self.window_size[flow_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data,  1)
+                    avg_time, avg_data = self.window_average(time, data)
                     plt.plot(avg_time, avg_data, '-')
                     legend_labels.append(flow_id)
                     
@@ -303,7 +302,6 @@ class DataMetrics(object):
         plt.ylabel('Window Size (packets)')
         plt.title("Flow Window Size")
         plt.show() 
-
 
     def prep_data(self, time, data, window_size):
         reshaped_time = []
