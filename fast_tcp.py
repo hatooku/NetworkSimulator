@@ -1,6 +1,6 @@
-from flow import flow
+from flow import Flow
 
-class FAST_TCP(flow):
+class FAST_TCP(Flow):
     """A flow class that represents active connections between
     hosts and routers.
 
@@ -33,16 +33,17 @@ class FAST_TCP(flow):
 
     """
 
-    WINDOW_UPDATE_PERIOD = 10
+    WINDOW_UPDATE_PERIOD = .75
 
-	def __init__(self, ns, flow_id, src, dest, data_amount, start_time, \
-        gamma=0.5, alpha=15):
-		Flow.__init__(self, ns, flow_id, src, dest, data_amount)
-		self._gamma = gamma
-		self._alpha = alpha
+    def __init__(self, ns, flow_id, src, dest, data_amount, start_time, \
+        gamma=0.25, alpha=15):
+        Flow.__init__(self, ns, flow_id, src, dest, data_amount, start_time, window_size=1)
+        self._gamma = gamma
+        self._alpha = alpha
         self.last_rtt = float('inf')
         self.base_rtt = float('inf')
 
+        self.ns.record_window_size(self.flow_id, self.window_size)
         self.schedule_next_update()
 
     @property
@@ -85,7 +86,7 @@ class FAST_TCP(flow):
         algorithm.
 
         """
-
+       
         if self.last_rtt < float('inf'):
             self.window_size = min(2 * self.window_size, \
                 (1 - self.gamma) * self.window_size + \
@@ -95,6 +96,7 @@ class FAST_TCP(flow):
             self.window_size *= 2
 
         self.send_packets()
+        self.ns.record_window_size(self.flow_id, self.window_size)
 
         self.schedule_next_update()
 

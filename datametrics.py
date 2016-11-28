@@ -152,6 +152,8 @@ class DataMetrics(object):
         data_point = (time, packet_delay)
         self.flow_packet_delay[flow_id].append(data_point)
 
+
+
     def plot_buffer_occupancy(self, links=None):
         legend_labels = []
         for link_id in self.buffer_occupancy:
@@ -239,6 +241,24 @@ class DataMetrics(object):
         plt.xlabel('time (s)')
         plt.ylabel('packet delay (ms)')
         plt.title("Flow Packet Delay")
+        plt.show()
+
+
+    def plot_flow_window_size(self, flows=None):
+        legend_labels = []
+        for flow_id in self.flow_rate:
+            if flows is None or flow_id in links:
+                all_data = np.array(self.window_size[flow_id])
+                if len(all_data) > 0:
+                    time, data = np.array(zip(*all_data))
+                    avg_time, avg_data = self.window_average(time, data,  1)
+                    plt.plot(avg_time, avg_data, '-')
+                    legend_labels.append(flow_id)
+                    
+        plt.legend(legend_labels)
+        plt.xlabel('time (s)')
+        plt.ylabel('Window Size (packets)')
+        plt.title("Flow Window Size")
         plt.show()
 
     def window_average(self, time, data, window_size=DEFAULT_WINDOW_SIZE):

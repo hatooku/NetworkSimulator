@@ -5,6 +5,7 @@ import sys
 from constants import *
 
 from flow import Flow
+from fast_tcp import FAST_TCP
 from host import Host
 from link import Link
 from router import Router
@@ -124,7 +125,7 @@ class NetworkSimulator(object):
         # Convert data_amount from megabytes to bits
         num_bits = data_amount * BYTE_TO_BIT * MEGABIT_TO_BIT
 
-        flow = Flow(self, flow_id, src, dest, num_bits, start_time)
+        flow = FAST_TCP(self, flow_id, src, dest, num_bits, start_time)
         self.flows[flow_id] = flow
         self._num_active_flows += 1
 
@@ -319,6 +320,7 @@ class NetworkSimulator(object):
 
         """
         self.data_metrics.record_flow_packet_delay(flow_id, rtt, self.cur_time)
+
 
     def plot_metrics(self):
         """Plots all relevant metrics from DataMetrics."""
