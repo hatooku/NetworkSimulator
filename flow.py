@@ -120,11 +120,19 @@ class Flow(object):
         self.ns.record_window_size(self.flow_id, self.window_size)
 
     def clean_unacknowledged(self):
+        """Method that cleans up unacknowledged packet array and gets rid
+        of all packet ids coming before the first unacknowledged packet
+
+        """
         self.unacknowledged_packets = \
             {packet_id for packet_id in self.unacknowledged_packets \
             if packet_id >= self.first_unacknowledged}
 
     def duplicate_ack(self):
+        """Method executed when the duplicate acknowledgement packet is
+        received.  Implemented differently for TCP reno
+
+        """
         self.duplicate_counter += 1
 
     def update_flow(self, a_packet):

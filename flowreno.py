@@ -26,11 +26,11 @@ class FlowReno(Flow):
         self.ns.record_window_size(self.flow_id, self.window_size)
 
     def duplicate_ack(self):
-        self.duplicate_counter += 1
-        if self.duplicate_counter > 3:
-            self.window_size += 1
+        """Method executed when the duplicate acknowledgement packet is
+        received.  After receiving 3 duplicate ACKS in a row, incrementing
+        window size for every additional duplicate ACK packets
 
-    def duplicate_ack(self):
+        """
         self.duplicate_counter += 1
         if self.duplicate_counter > 3:
             self.window_size += 1
