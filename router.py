@@ -1,13 +1,10 @@
 from node import Node
 from host import Host
 from packet import RoutingPacket
+from constants import *
 
 class Router(Node):
     """A class that will represent routers.
-
-    Class variables:
-        REROUTE_PERIOD (float): The length of time between each reroute cycle
-            in seconds.
 
     Attributes:
         ns (NetworkSimulator): An instance of the NetworkSimulator class.
@@ -22,8 +19,6 @@ class Router(Node):
             { link_id : cost }
 
     """
-
-    REROUTE_PERIOD = 5.0
 
     def __init__(self, ns, node_id):
         Node.__init__(self, ns, node_id)
@@ -98,7 +93,7 @@ class Router(Node):
             "Router.start_routing_cycle on router %s" % self.node_id
         self.ns.add_event(next_cycle_event,
             next_description,
-            delay=self.REROUTE_PERIOD)
+            delay=REROUTE_PERIOD)
 
     def send_routing_packets(self):
         """Sends out the routing table to all of the router's links."""

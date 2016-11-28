@@ -340,4 +340,3 @@ class DataMetrics(object):
         avg_rate = sum_data * 1.0 / window_size
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         return avg_time, avg_rate
-
