@@ -40,7 +40,7 @@ class FlowReno(Flow):
 
         """
         if self.fast_recovery:
-            self.window_size = self.ssthreshold
+            self.window_size = math.ceil(self.ssthreshold)
             self.fast_recovery = False
         elif self.slow_start():
             self.window_size += 1.0

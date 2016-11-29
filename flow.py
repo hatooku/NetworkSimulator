@@ -34,7 +34,7 @@ class Flow(object):
         self.data_amount = data_amount
         self.start_time = start_time
         self.unacknowledged_packets = set()
-        self.first_unacknowledged = 0.0
+        self.first_unacknowledged = 0
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = 1.0
         self.duplicate_counter = 0
@@ -203,8 +203,9 @@ class Flow(object):
                 initial send.
 
         """
+        
         new_packet = DataPacket(packet_id, self.src.node_id,
-            self.dest.node_id, self.flow_id, self.ns.cur_time)
+            self.dest.node_id, self.flow_id, self.ns.cur_time + delay)
 
         self.unacknowledged_packets.add(new_packet.packet_id)
 
@@ -217,15 +218,13 @@ class Flow(object):
         event2 = lambda: self.time_out(new_packet.packet_id)
         event2_message = "flow.create_packet: Adding to time_out_packets, packet " + \
             str(new_packet.packet_id)
-        self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
+        self.ns.add_event(event2, event2_message, delay=TIMEOUT_DELAY + delay)
 
-    def make_acknowledgement_packet(self, src, dest, timestamp):
+    def make_acknowledgement_packet(self, timestamp):
         """Method makes the AcknowledgementPacket and triggers the send_packet
         method for the host if applicable
 
         Args:
-            src (Node): The packet's source node
-            dest (Node): The packet's destination node
             timestamp (float): time the packet to be acknowledged was sent
 
         """
@@ -234,6 +233,9 @@ class Flow(object):
             next_expected = self.unreceived_packets[0]
         else:
             next_expected = self.num_packets
+        # Acknowledgement packet goes in reverse
+        src = self.dest.node_id
+        dest = self.src.node_id
         new_packet = AcknowledgementPacket(next_expected, src, dest, self.flow_id, timestamp)
 
         event = lambda: self.dest.send_packet(new_packet)
@@ -270,4 +272,4 @@ class Flow(object):
         if packet.packet_id in self.unreceived_packets:
             self.unreceived_packets.remove(packet.packet_id)
 
-        self.make_acknowledgement_packet(packet.dest, packet.src, packet.timestamp)
+        self.make_acknowledgement_packet(packet.timestamp)
