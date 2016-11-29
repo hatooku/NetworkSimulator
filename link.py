@@ -38,7 +38,7 @@ class Link(object):
         self.nodes = nodes
         
         self.link_buffer = deque()
-        self._packets_in_route = deque()
+        self._packets_in_route = 0
         self._cur_destination = None
         
         
@@ -163,25 +163,14 @@ class Link(object):
             self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
             if len(self.link_buffer) == 1 and not self.is_transmitting:
-                if len(self.packets_in_route) == 0 or \
+                if self.packets_in_route == 0 or \
                    destination == self.cur_destination:
 
-                    self.schedule_next_transmission()
+                    self.start_packet_transmission()
         else:
             print "Link %s is full; packet %s is dropped @ t=%f" \
                 % (self.link_id, packet.packet_id, self.ns.cur_time)
             self.ns.record_packet_loss(self.link_id)
-
-    def schedule_next_transmission(self):
-        """Adds the next packet transmission event to the global queue."""
-
-        assert not self.is_transmitting
-        self._is_transmitting = True
-
-        event = lambda: self.start_packet_transmission()
-        description = "Link.start_packet_transmission with link_id = %s" \
-            % (self.link_id)
-        self.ns.add_event(event, description)
     
     def start_packet_transmission(self):
         """Transmit a packet into the link
@@ -192,19 +181,18 @@ class Link(object):
             
         """
 
-        packet_info = self.link_buffer.popleft()
+        assert not self.is_transmitting
+        self._is_transmitting = True
+
+        packet_info = self.link_buffer[0]
 
         assert self._cur_destination is None \
                 or self._cur_destination == packet_info[1]
 
-        self._packets_in_route.append(packet_info[0])
         packet_size = packet_info[0].packet_size
-        self._cur_buffer_size -= packet_size
-
-        self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
         event = lambda: self.start_packet_propagation()
-        trans_delay = packet_size / self.capacity
+        trans_delay = 1.0 * packet_size / self.capacity
         
         self.ns.add_event(event, "Link.start_packet_propagation() with"
                               " link_id = %s" % (self.link_id), trans_delay)
@@ -220,10 +208,16 @@ class Link(object):
         Calls finish_packet_transfer after the propagation delay.
         
         """
+        packet_info = self.link_buffer.popleft()
+        self._packets_in_route += 1
+        packet_size = packet_info[0].packet_size
+        self._cur_buffer_size -= packet_size
+
+        self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
        
         self._is_transmitting = False
        
-        event = lambda: self.finish_packet_transfer()
+        event = lambda: self.finish_packet_transfer(packet_info[0])
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
                           " link_id = %s" % self.link_id, self.prop_delay)
 
@@ -233,9 +227,9 @@ class Link(object):
             next_packet_info = self.link_buffer[0]
             next_destination = next_packet_info[1]
             if next_destination == self.cur_destination:
-                self.schedule_next_transmission()
+                self.start_packet_transmission()
    
-    def finish_packet_transfer(self):
+    def finish_packet_transfer(self, packet):
         """Hand off the packet to the node it was going to. 
         
         When this method is called, the packet will be transferred to the 
@@ -244,28 +238,28 @@ class Link(object):
         packet will be sent.
         
         """
-        assert len(self.packets_in_route) > 0
+        assert self.packets_in_route > 0
         assert self.cur_destination != None
         cur_destination = self.cur_destination
-        cur_packet = self.packets_in_route.popleft()
-        event = lambda: cur_destination.receive_packet(cur_packet, self.link_id)
+        self._packets_in_route -= 1
+        event = lambda: cur_destination.receive_packet(packet, self.link_id)
         self.ns.add_event(event, "Node.receive_packet() with node_id = %s, "
                           "cur_packet = %s, link_id = %s" \
-                          % (cur_destination.node_id, cur_packet.packet_id, 
+                          % (cur_destination.node_id, packet.packet_id, 
                              self.link_id))
         
-        self.ns.record_link_rate(self.link_id, cur_packet.packet_size)
+        self.ns.record_link_rate(self.link_id, packet.packet_size)
         
         # If there are no links being transmitted or propagated,
         # set current destination to None.
-        if not self.is_transmitting and len(self.packets_in_route) == 0:
+        if not self.is_transmitting and self.packets_in_route == 0:
             self._cur_destination = None
 
         # Start transmitting next packet buffer if applicable.
         if len(self.link_buffer) > 0 and not self.is_transmitting:
-            next_packet_info = self.link_buffer[0]
-            next_destination = next_packet_info[1]
+            #next_packet_info = self.link_buffer[0]
+            #next_destination = next_packet_info[1]
 
             if self.cur_destination is None:
-                self.schedule_next_transmission()
+                self.start_packet_transmission()
     
