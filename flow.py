@@ -236,7 +236,7 @@ class Flow(object):
             next_expected = self.num_packets
         new_packet = AcknowledgementPacket(next_expected, src, dest, self.flow_id, timestamp)
 
-        event = lambda: self.src.send_packet(new_packet)
+        event = lambda: self.dest.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
             str(self.flow_id) + ": made acknowledgment packet " + str(next_expected)
         self.ns.add_event(event, event_message)
