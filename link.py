@@ -207,14 +207,9 @@ class Link(object):
         self._packets_in_route.append((packet, destination))
         assert self._get_cur_destination() == destination
        
-        if isinstance(packet, AcknowledgementPacket):
-            event = lambda: self.finish_packet_transfer()
-            self.ns.add_event(event, "Link.finish_packet_transfer() with"
-                              " link_id = %s" % self.link_id)
-        else:
-            event = lambda: self.finish_packet_transfer()
-            self.ns.add_event(event, "Link.finish_packet_transfer() with"
-                              " link_id = %s" % self.link_id, self.prop_delay)
+        event = lambda: self.finish_packet_transfer()
+        self.ns.add_event(event, "Link.finish_packet_transfer() with"
+                          " link_id = %s" % self.link_id, self.prop_delay)
 
         if len(self.link_buffer) > 0:
             next_destination = self.link_buffer[0][1]
