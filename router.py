@@ -84,9 +84,7 @@ class Router(Node):
         self.update_adj_link_costs()
         self.update_routing_table()
 
-        event = lambda: self.send_routing_packets()
-        description = "Router.send_routing_packets on router %s" % self.node_id
-        self.ns.add_event(event, description)
+        self.send_routing_packets()
 
         next_cycle_event = lambda: self.start_routing_cycle()
         next_description = \
@@ -145,9 +143,7 @@ class Router(Node):
 
         # If we do update the routing table, send out routing packets
         if changed:
-            event = lambda: self.send_routing_packets()
-            description = "Router.send_routing_packets on router %s" % self.node_id
-            self.ns.add_event(event, description)
+            self.send_routing_packets()
 
     def update_routing_table(self):
         """Updates the routing table, if necessary, according to the
