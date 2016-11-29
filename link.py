@@ -168,8 +168,8 @@ class Link(object):
 
                     self.schedule_next_transmission()
         else:
-            print "Link %s is full; packet %s is dropped." \
-                % (self.link_id, packet.packet_id)
+            print "Link %s is full; packet %s is dropped @ t=%f" \
+                % (self.link_id, packet.packet_id, self.ns.cur_time)
             self.ns.record_packet_loss(self.link_id)
 
     def schedule_next_transmission(self):
