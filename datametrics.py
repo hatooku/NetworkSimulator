@@ -347,9 +347,9 @@ class DataMetrics(object):
     def window_rate(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
         reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
-        new_sum = np.sum(np.sum(reshaped_data))
+        
         max_time = time[-1]
-        window_size = int(np.ceil(max_time / num_windows))
+        window_size = 1.0 * max_time / num_windows
         avg_rate = sum_data * 1.0 / window_size
         avg_time = np.array([np.mean(a) for a in reshaped_time])
 

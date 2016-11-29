@@ -112,7 +112,7 @@ class NetworkSimulator(object):
         link = Link(self, link_id, size_bits, prop_delay_s, capacity_bps, nodes)
         self.links[link_id] = link
 
-    def add_flow(self, flow_id, src, dest, data_amount, start_time):
+    def add_flow(self, flow_id, src, dest, data_amount, start_time, flowtype):
         """Adds a new flow to the network.
 
         Args:
@@ -125,8 +125,16 @@ class NetworkSimulator(object):
         """
         # Convert data_amount from megabytes to bits
         num_bits = data_amount * BYTE_TO_BIT * MEGABIT_TO_BIT
-
-        flow = FAST_TCP(self, flow_id, src, dest, num_bits, start_time)
+        if flowtype is not None:
+            if "fast" == flowtype.lower():
+                flow = FAST_TCP(self, flow_id, src, dest, num_bits, start_time)
+            elif "reno" == flowtype.lower():
+                flow = FlowReno(self, flow_id, src, dest, num_bits, start_time)
+            else:
+                flow = Flow(self, flow_id, src, dest, num_bits, start_time)
+        else:
+            flow = Flow(self, flow_id, src, dest, num_bits, start_time)
+        
         self.flows[flow_id] = flow
         self._num_active_flows += 1
 
@@ -137,7 +145,7 @@ class NetworkSimulator(object):
     def decrement_active_flows(self):
         self._num_active_flows -= 1
 
-    def populate(self, network_description):
+    def populate(self, network_description, flowtype=None):
         """Populates a new network given a network description in JSON form.
 
         num_active_flows is set to the number of flows.
@@ -197,7 +205,7 @@ class NetworkSimulator(object):
             dest = self.nodes[flow["dest"]]
             start_time = float(flow["starting_time"])
 
-            self.add_flow(flow_id, src, dest, data_amt, start_time)
+            self.add_flow(flow_id, src, dest, data_amt, start_time, flowtype)
 
             print "Flow %s added to network." % flow_id
 
