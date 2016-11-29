@@ -169,7 +169,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data, '-')
+                    plt.plot(avg_time, avg_data, '.')
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -270,7 +270,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data * S_TO_MS, '-')
+                    plt.plot(avg_time, avg_data * S_TO_MS, '.')
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -312,18 +312,24 @@ class DataMetrics(object):
         data_in_window = []
 
         max_time = time[-1]
-        window_size = int(np.ceil(max_time / num_windows))
+        window_size = max_time / num_windows
 
         for i in range(len(time)):
             if time[i] > cur_window + window_size:
                 cur_window += window_size
+                if len(data_in_window) == 0:
+                    times_in_window.append(cur_window - window_size / 2)
+                    data_in_window.append(0)
+                
                 reshaped_time.append(times_in_window)
                 reshaped_data.append(data_in_window)
                 times_in_window = []
                 data_in_window = []
-
             times_in_window.append(time[i])
             data_in_window.append(data[i])
+        reshaped_time.append(times_in_window)
+        reshaped_data.append(data_in_window)
+
         return reshaped_time, reshaped_data
 
     def window_average(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
@@ -341,6 +347,7 @@ class DataMetrics(object):
     def window_rate(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
         reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
+        new_sum = np.sum(np.sum(reshaped_data))
         max_time = time[-1]
         window_size = int(np.ceil(max_time / num_windows))
         avg_rate = sum_data * 1.0 / window_size
