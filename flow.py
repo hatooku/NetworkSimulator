@@ -106,6 +106,7 @@ class Flow(object):
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
+        self.duplicate_counter = 0
 
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
@@ -123,16 +124,11 @@ class Flow(object):
         of all packet ids coming before the first unacknowledged packet
 
         """
+        prev_length = len(self.unacknowledged_packets)
         self.unacknowledged_packets = \
             {packet_id for packet_id in self.unacknowledged_packets \
             if packet_id >= self.first_unacknowledged}
-
-    def duplicate_ack(self):
-        """Method executed when the duplicate acknowledgement packet is
-        received.  Implemented differently for TCP reno
-
-        """
-        self.duplicate_counter += 1
+        return prev_length - len(self.unacknowledged_packets)
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
@@ -154,13 +150,14 @@ class Flow(object):
             self.check_flow_completion()
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
-            self.duplicate_ack()
+            self.duplicate_counter += 1
             self.send_packets()
 
             if self.duplicate_counter == 3:
                 self.update_fast_retransmit_window_size()
                 self.unacknowledged_packets.remove(self.first_unacknowledged)
                 self.create_packet(self.first_unacknowledged)
+                assert(self.first_unacknowledged in self.unacknowledged_packets)
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
@@ -203,7 +200,7 @@ class Flow(object):
                 initial send.
 
         """
-        
+
         new_packet = DataPacket(packet_id, self.src.node_id,
             self.dest.node_id, self.flow_id, self.ns.cur_time + delay)
 

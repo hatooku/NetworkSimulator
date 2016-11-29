@@ -294,7 +294,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     #avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(time, data, '.')
+                    plt.plot(time, data, '-')
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
