@@ -67,17 +67,17 @@ class FAST_TCP(Flow):
 
         if a_packet.packet_id > self.first_unacknowledged:
             self.first_unacknowledged = a_packet.packet_id
-            self.duplicate_counter = 0
+            #self.duplicate_counter = 0
             self.clean_unacknowledged()
             self.check_flow_completion()
             self.send_packets()
-        elif a_packet.packet_id == self.first_unacknowledged:
-            self.duplicate_ack()
+        #elif a_packet.packet_id == self.first_unacknowledged:
+        #    self.duplicate_ack()
 
-            if self.duplicate_counter == 3:
-                self.unacknowledged_packets.remove(self.first_unacknowledged)
-                self.create_packet(self.first_unacknowledged)
-                self.canceled_timeouts.append(self.first_unacknowledged)
+        #    if self.duplicate_counter == 3:
+        #        self.unacknowledged_packets.remove(self.first_unacknowledged)
+        #        self.create_packet(self.first_unacknowledged)
+        #        self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
         if packet_id in self.canceled_timeouts:
@@ -99,7 +99,7 @@ class FAST_TCP(Flow):
                 self.gamma * (self.base_rtt / self.last_rtt * self.window_size \
                     + self.alpha))
 
-            self.send_packets()
+            #self.send_packets()
             self.ns.record_window_size(self.flow_id, self.window_size)
 
         self.schedule_next_update()
