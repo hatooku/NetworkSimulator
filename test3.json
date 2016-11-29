@@ -1,0 +1,54 @@
+{
+    "network": {
+        "hosts": [
+            {
+                "id": "H1",
+                "link": "L0"
+            },
+            {
+                "id": "H2",
+                "link": "L1"
+            }
+        ],
+        "links": [
+            {
+                "id": "L0",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "H1",
+                    "R1"
+                ]
+            },
+            {
+                "id": "L1",
+                "rate": 10,
+                "delay": 10,
+                "buffer_size": 64,
+                "nodes": [
+                    "R1",
+                    "H2"
+                ]
+            }
+        ],
+        "routers": [
+            {
+                "id": "R1",
+                "links": [
+                    "L0",
+					"L1"
+            	]
+            }
+        ],
+        "flows": [
+            {
+                "id": "F1",
+                "src": "H1",
+                "dest": "H2",
+                "data_amt": 20,
+                "starting_time": 0.5
+            }
+        ]
+    }
+}
