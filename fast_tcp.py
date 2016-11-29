@@ -71,13 +71,6 @@ class FAST_TCP(Flow):
             self.clean_unacknowledged()
             self.check_flow_completion()
             self.send_packets()
-        #elif a_packet.packet_id == self.first_unacknowledged:
-        #    self.duplicate_ack()
-
-        #    if self.duplicate_counter == 3:
-        #        self.unacknowledged_packets.remove(self.first_unacknowledged)
-        #        self.create_packet(self.first_unacknowledged)
-        #        self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
         if packet_id in self.canceled_timeouts:
