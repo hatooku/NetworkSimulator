@@ -14,8 +14,8 @@ class Flow(object):
         dest (Node): The flow's destination node id
         data_amount (float): Data capacity of the flow (bits)
         start_time (float): Start time in seconds
-        unacknowledged_packets (set): The list of packets with no acknowledgement
-        first_unacknowledged (float): Id of first packet that hasn't been acknowledged
+        unacknowledged_packets (set): The list of packets with no 
+            acknowledgement
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
         duplicate_counter (int): Count number of times a duplicate packet is
@@ -34,7 +34,7 @@ class Flow(object):
         self.data_amount = data_amount
         self.start_time = start_time
         self.unacknowledged_packets = set()
-        self.first_unacknowledged = 0.0
+        self.first_unacknowledged = 0
         self.num_packets = int(math.ceil(data_amount/DATA_PACKET_SIZE))
         self.window_size = 1.0
         self.duplicate_counter = 0
@@ -44,6 +44,7 @@ class Flow(object):
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
 
+        self.ns.record_window_size(self.flow_id, self.window_size)
         self.send_packets(self.start_time)
 
     @property
@@ -105,6 +106,7 @@ class Flow(object):
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.ns.record_window_size(self.flow_id, self.window_size)
+        self.duplicate_counter = 0
 
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
@@ -122,16 +124,11 @@ class Flow(object):
         of all packet ids coming before the first unacknowledged packet
 
         """
+        prev_length = len(self.unacknowledged_packets)
         self.unacknowledged_packets = \
             {packet_id for packet_id in self.unacknowledged_packets \
             if packet_id >= self.first_unacknowledged}
-
-    def duplicate_ack(self):
-        """Method executed when the duplicate acknowledgement packet is
-        received.  Implemented differently for TCP reno
-
-        """
-        self.duplicate_counter += 1
+        return prev_length - len(self.unacknowledged_packets)
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
@@ -142,6 +139,9 @@ class Flow(object):
                 back from host
         """
 
+        rtt = self.ns.cur_time - a_packet.timestamp
+        self.ns.record_packet_rtt_time(self.flow_id, rtt)
+
         if a_packet.packet_id > self.first_unacknowledged:
             self.update_ack_window_size()
             self.first_unacknowledged = a_packet.packet_id
@@ -150,13 +150,14 @@ class Flow(object):
             self.check_flow_completion()
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
-            self.duplicate_ack()
+            self.duplicate_counter += 1
             self.send_packets()
 
             if self.duplicate_counter == 3:
                 self.update_fast_retransmit_window_size()
                 self.unacknowledged_packets.remove(self.first_unacknowledged)
                 self.create_packet(self.first_unacknowledged)
+                assert(self.first_unacknowledged in self.unacknowledged_packets)
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
@@ -199,8 +200,9 @@ class Flow(object):
                 initial send.
 
         """
+
         new_packet = DataPacket(packet_id, self.src.node_id,
-            self.dest.node_id, self.flow_id)
+            self.dest.node_id, self.flow_id, self.ns.cur_time + delay)
 
         self.unacknowledged_packets.add(new_packet.packet_id)
 
@@ -213,16 +215,14 @@ class Flow(object):
         event2 = lambda: self.time_out(new_packet.packet_id)
         event2_message = "flow.create_packet: Adding to time_out_packets, packet " + \
             str(new_packet.packet_id)
-        self.ns.add_event(event2, event2_message, delay=ACK_DELAY + delay)
+        self.ns.add_event(event2, event2_message, delay=TIMEOUT_DELAY + delay)
 
-
-    def make_acknowledgement_packet(self, src, dest):
+    def make_acknowledgement_packet(self, timestamp):
         """Method makes the AcknowledgementPacket and triggers the send_packet
         method for the host if applicable
 
         Args:
-            src (Node): The packet's source node
-            dest (Node): The packet's destination node
+            timestamp (float): time the packet to be acknowledged was sent
 
         """
 
@@ -230,9 +230,12 @@ class Flow(object):
             next_expected = self.unreceived_packets[0]
         else:
             next_expected = self.num_packets
-        new_packet = AcknowledgementPacket(next_expected, src, dest, self.flow_id)
+        # Acknowledgement packet goes in reverse
+        src = self.dest.node_id
+        dest = self.src.node_id
+        new_packet = AcknowledgementPacket(next_expected, src, dest, self.flow_id, timestamp)
 
-        event = lambda: self.src.send_packet(new_packet)
+        event = lambda: self.dest.send_packet(new_packet)
         event_message = "flow.make_acknowledgement_packet(): Flow" + \
             str(self.flow_id) + ": made acknowledgment packet " + str(next_expected)
         self.ns.add_event(event, event_message)
@@ -262,7 +265,8 @@ class Flow(object):
             packet (Packet): The packet attempting to be acknowledged
 
         """
+
         if packet.packet_id in self.unreceived_packets:
             self.unreceived_packets.remove(packet.packet_id)
 
-        self.make_acknowledgement_packet(packet.dest, packet.src)
+        self.make_acknowledgement_packet(packet.timestamp)

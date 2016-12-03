@@ -26,9 +26,6 @@ class DataMetrics(object):
         flow_packet_delay (dict): holds roundtrip time data for each flow
             The key is the flow_id and the value is an array of
             (time of acknowledgement, roundtrip time) tuples.
-        flow_packet_sent_time (dict): holds data on when each packet was sent,
-            to be used for calculating the roundtrip time. The key is the
-            (flow_id, packet_id) and the value is the sent time.
 
     """
 
@@ -39,7 +36,6 @@ class DataMetrics(object):
         self.flow_rate = {}
         self.window_size = {}
         self.flow_packet_delay = {}
-        self.flow_packet_sent_time = {}
 
     def update_buffer_occupancy(self, link_id, buffer_occupancy, time):
         """Add a buffer occupancy data point, or modify a previously added
@@ -141,35 +137,8 @@ class DataMetrics(object):
         data_point = (time, prev_window_size + window_size)
         self.window_size[flow_id].append(data_point)
 
-    def update_packet_send_time(self, flow_id, packet_id, time):
-        """Record the most recent time a packet was sent, for use in
-        calculating the roundtrip time.
-
-        Args:
-            flow_id (str): the id of the flow that the packet belongs to.
-            packet_id (int): the id of the packet being sent.
-            time (float): the time the packet was last sent.
-
-        """
-        self.flow_packet_sent_time[(flow_id, packet_id)] = time
-
-    def update_packet_ack_time(self, flow_id, packet_id, time):
-        """Records the acknowledgement of a packet, for use in
-        calculating the roundtrip time.
-
-        Args:
-            flow_id (str): the id of the flow that the packet belongs to.
-            packet_id (int): the id of the packet being sent.
-            time (float): the time the packet was acknowledged.
-
-        """
-        if (flow_id, packet_id) not in self.flow_packet_sent_time:
-            raise Exception("Packet send time not set for packet %s "
-                            "in flow %s" % (packet_id, flow_id))
-        rtt = time - self.flow_packet_sent_time[(flow_id, packet_id)]
-        self._update_flow_packet_delay(flow_id, rtt, time)
-
-    def _update_flow_packet_delay(self, flow_id, packet_delay, time):
+    
+    def record_flow_packet_delay(self, flow_id, packet_delay, time):
         """Records the roundtrip time for a packet in a flow.
 
         Args:
@@ -183,7 +152,16 @@ class DataMetrics(object):
         data_point = (time, packet_delay)
         self.flow_packet_delay[flow_id].append(data_point)
 
+
+
     def plot_buffer_occupancy(self, links=None):
+        """Plots the buffer occupancy of packets in link buffers.
+
+        Args:
+            links (arr[Link]): if links is given, only the links in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.buffer_occupancy:
             if links is None or link_id in links:
@@ -191,7 +169,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data, '-')
+                    plt.plot(avg_time, avg_data, '.')
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -201,6 +179,13 @@ class DataMetrics(object):
         plt.show()
 
     def plot_flow_rate(self, flows=None):
+        """Plots the flow rate of flows in the simulation.
+
+        Args:
+            flows (arr[Flow]): if flows is given, only the flows in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for flow_id in self.flow_rate:
             if flows is None or flow_id in flows:
@@ -219,6 +204,13 @@ class DataMetrics(object):
         plt.show()
 
     def plot_link_rate(self, links=None):
+        """Plots the link rate of links in the simulation.
+
+        Args:
+            links (arr[Link]): if links is given, only the links in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.link_rate:
             if links is None or link_id in links:
@@ -229,7 +221,7 @@ class DataMetrics(object):
                    
                     avg_time, avg_rate = self.window_rate(time, data)
                     avg_rate = np.around(avg_rate, 2)
-                    plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '-')
+                    plt.plot(avg_time, avg_rate * BIT_TO_MEGABIT, '.')
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -239,13 +231,20 @@ class DataMetrics(object):
         plt.show()
 
     def plot_packet_loss(self, links=None):
+        """Plots the packet loss on each link in the simulation.
+
+        Args:
+            links (arr[Link]): if links is given, only the packets on links in 
+            the array will be plotted.
+
+        """
         legend_labels = []
         for link_id in self.packet_loss:
             if links is None or link_id in links:
                 all_data = np.array(self.packet_loss[link_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_sum(time, data, 100)
+                    avg_time, avg_data = self.window_sum(time, data)
                     plt.plot(avg_time, avg_data, '-')
                     legend_labels.append(link_id)
                     
@@ -256,6 +255,14 @@ class DataMetrics(object):
         plt.show()
 
     def plot_flow_packet_delay(self, flows=None):
+        """Plots the round trip time of packets on each of the flows in the 
+        simulation.
+
+        Args:
+            flows (arr[Flow]): if flows is given, only the flows in the array
+            will be plotted.
+
+        """
         legend_labels = []
         for flow_id in self.flow_rate:
             if flows is None or flow_id in links:
@@ -263,7 +270,7 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data * S_TO_MS, '-')
+                    plt.plot(avg_time, avg_data * S_TO_MS, '.')
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -286,46 +293,64 @@ class DataMetrics(object):
                 all_data = np.array(self.window_size[flow_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(avg_time, avg_data, '-')
+                    #avg_time, avg_data = self.window_average(time, data)
+                    plt.plot(time, data, '-')
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
         plt.xlabel('time (s)')
         plt.ylabel('Window Size (packets)')
         plt.title("Flow Window Size")
-        plt.show()
+        plt.show() 
 
-    def window_average(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-        avg_time = np.mean(reshaped_time, axis=1)
-        avg_data = np.mean(reshaped_data, axis=1)
+    def prep_data(self, time, data, num_windows):
+        reshaped_time = []
+        reshaped_data = []
+        cur_window = 0
+
+        times_in_window = []
+        data_in_window = []
+
+        max_time = time[-1]
+        window_size = max_time / num_windows
+
+        for i in range(len(time)):
+            if time[i] > cur_window + window_size:
+                cur_window += window_size
+                if len(data_in_window) == 0:
+                    times_in_window.append(cur_window - window_size / 2)
+                    data_in_window.append(0)
+                
+                reshaped_time.append(times_in_window)
+                reshaped_data.append(data_in_window)
+                times_in_window = []
+                data_in_window = []
+            times_in_window.append(time[i])
+            data_in_window.append(data[i])
+        reshaped_time.append(times_in_window)
+        reshaped_data.append(data_in_window)
+
+        return reshaped_time, reshaped_data
+
+    def window_average(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
+        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
+        avg_data = np.array([np.mean(a) for a in reshaped_data])
         return avg_time, avg_data
 
-    def window_sum(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-        avg_time = np.mean(reshaped_time, axis=1)
-        window_data = np.sum(reshaped_data, axis=1)
+    def window_sum(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
+        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
+        window_data = np.array([np.sum(a) for a in reshaped_data])
         return avg_time, window_data
 
-    def window_rate(self, time, data, window_size=DEFAULT_WINDOW_SIZE):
-        # leave out last few elements that don't fit into a full window
+    def window_rate(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
+        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+        sum_data = np.array([np.sum(a) for a in reshaped_data])
+        
+        max_time = time[-1]
+        window_size = 1.0 * max_time / num_windows
+        avg_rate = sum_data * 1.0 / window_size
+        avg_time = np.array([np.mean(a) for a in reshaped_time])
 
-        # if there are less than window_size points, window size is set to 2
-        if len(data) < window_size: 
-            window_size = 2
-        end = window_size * int(len(data)/window_size)
-        reshaped_time = time[:end].reshape(-1, window_size)
-        reshaped_data = data[:end].reshape(-1, window_size)
-
-        sum_data = np.sum(reshaped_data, axis=1)
-        delta_t = np.apply_along_axis(lambda t: t[-1] - t[0], 1, reshaped_time)
-        avg_rate = sum_data * 1.0 / delta_t
-        avg_time = np.mean(reshaped_time, axis=1)
         return avg_time, avg_rate

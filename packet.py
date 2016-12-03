@@ -10,14 +10,16 @@ class Packet(object):
         dest (string): The flow's destination node id
         packet_size (float): The packet's size in bits
         flow_id (string): Unique id indicating flow
+        timestamp (float): Time the packet was sent
     """
 
-    def __init__(self, packet_id, src, dest, packet_size, flow_id):
+    def __init__(self, packet_id, src, dest, packet_size, flow_id, timestamp):
         self._packet_id = packet_id
         self._src = src
         self._dest = dest
         self._packet_size = packet_size
         self._flow_id = flow_id
+        self._timestamp = timestamp
 
     @property
     def packet_id(self):
@@ -59,6 +61,15 @@ class Packet(object):
     def flow_id(self, flow_id):
         raise AttributeError("Cannot modify a packet's flow id.")
 
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, timestamp):
+        raise AttributeError("Cannot modify timestamp of a packet.")
+
+
 class DataPacket(Packet):
     """A class that will represent data packets.
 
@@ -70,8 +81,8 @@ class DataPacket(Packet):
         data (string): Data string being stored in the packet in bits
     """
 
-    def __init__(self, packet_id, src, dest, flow_id, data=""):
-        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id)
+    def __init__(self, packet_id, src, dest, flow_id, timestamp, data=""):
+        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id, timestamp)
         self.data = data
 
 class RoutingPacket(Packet):
@@ -85,8 +96,8 @@ class RoutingPacket(Packet):
         routing_table (dict): Routing table
     """
 
-    def __init__(self, packet_id, src, dest, flow_id, routing_table):
-        Packet.__init__(self, packet_id, src, dest, ROUT_PACKET_SIZE, flow_id)
+    def __init__(self, packet_id, src, dest, flow_id, routing_table, timestamp):
+        Packet.__init__(self, packet_id, src, dest, ROUT_PACKET_SIZE, flow_id, timestamp)
         self.routing_table = routing_table
 
 class AcknowledgementPacket(Packet):
@@ -99,8 +110,8 @@ class AcknowledgementPacket(Packet):
         flow_id (string): Unique id indicating flow
     """
 
-    def __init__(self, packet_id, src, dest, flow_id):
-        Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id)
+    def __init__(self, packet_id, src, dest, flow_id, timestamp):
+        Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id, timestamp)
 
 
 

@@ -15,8 +15,16 @@ DATA_PACKET_SIZE = 1024.0 * BYTE_TO_BIT
 ACK_PACKET_SIZE = 64.0 * BYTE_TO_BIT
 ROUT_PACKET_SIZE = 128.0 * BYTE_TO_BIT
 
-ACK_DELAY = 1000.0 * MS_TO_S
+TIMEOUT_DELAY = 500.0 * MS_TO_S
+# Delay between the time a host receives an ACK and sends packets
+SEND_DELAY = 10 * MS_TO_S
 
-DEFAULT_WINDOW_SIZE = 100
+DEFAULT_NUM_WINDOWS = 500 # number of time windows
 
-REROUTE_PERIOD = 5.0
+REROUTE_PERIOD = 10.0
+
+# The length of time between each window size update in seconds.
+FAST_WINDOW_UPDATE_PERIOD = 20 * MS_TO_S
+
+FAST_GAMMA = 0.5
+FAST_ALPHA = 15
