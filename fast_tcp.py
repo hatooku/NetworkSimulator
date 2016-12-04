@@ -91,9 +91,7 @@ class FAST_TCP(Flow):
                 (1 - self.gamma) * self.window_size + \
                 self.gamma * (self.base_rtt / self.last_rtt * self.window_size \
                     + self.alpha))
-
-            #self.send_packets()
-            self.ns.record_window_size(self.flow_id, self.window_size)
+            self.record_window_size()
 
         self.schedule_next_update()
 

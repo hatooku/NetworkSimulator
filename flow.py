@@ -44,8 +44,9 @@ class Flow(object):
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
 
-        self.ns.record_window_size(self.flow_id, self.window_size)
+        self.record_window_size()
         self.send_packets(self.start_time)
+       
 
     @property
     def flow_id(self):
@@ -76,8 +77,7 @@ class Flow(object):
         updates the NetworkSimulator object accordingly.
 
         """
-
-        if self.first_unacknowledged >= self.num_packets:
+        if self.is_done():
             self.ns.decrement_active_flows()
 
     def slow_start(self):
@@ -91,10 +91,9 @@ class Flow(object):
 
         if self.slow_start():
             self.window_size += 1.0
-            self.ns.record_window_size(self.flow_id, self.window_size)
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
-            self.ns.record_window_size(self.flow_id, self.window_size)
+        self.record_window_size()
 
     def update_timeout_window_size(self):
         """Method that updates window size after a timeout.
@@ -105,8 +104,8 @@ class Flow(object):
 
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
-        self.ns.record_window_size(self.flow_id, self.window_size)
         self.duplicate_counter = 0
+        self.record_window_size()
 
     def update_fast_retransmit_window_size(self):
         """Method that updates window size during fast retransmit.
@@ -117,7 +116,7 @@ class Flow(object):
 
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
-        self.ns.record_window_size(self.flow_id, self.window_size)
+        self.record_window_size()
 
     def clean_unacknowledged(self):
         """Method that cleans up unacknowledged packet array and gets rid
@@ -225,7 +224,6 @@ class Flow(object):
             timestamp (float): time the packet to be acknowledged was sent
 
         """
-
         if len(self.unreceived_packets) > 0:
             next_expected = self.unreceived_packets[0]
         else:
@@ -270,3 +268,23 @@ class Flow(object):
             self.unreceived_packets.remove(packet.packet_id)
 
         self.make_acknowledgement_packet(packet.timestamp)
+    
+    def is_done(self):
+        """Checks if a flow is completed. 
+
+        If the first unacknowledged packet is after our number
+        of packets sent, the flow is done
+
+        """
+        return self.first_unacknowledged == self.num_packets
+
+    def record_window_size(self):
+        """Records the window size of the flow.
+
+            Calls the network simulator to record the window size.
+            We only care to log the window size if the flow is not done yet.
+
+        """
+        if not self.is_done():
+            self.ns.record_window_size(self.flow_id, self.window_size)
+
