@@ -50,7 +50,7 @@ class FlowReno(Flow):
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
         self.duplicate_counter = 0
-        self.ns.record_window_size(self.flow_id, self.window_size)
+        self.record_window_size()
 
     def update_timeout_window_size(self):
         """Method that updates window size after a timeout.
@@ -110,7 +110,7 @@ class FlowReno(Flow):
         self.first_partial_ack = min(self.unacknowledged_packets)
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = self.ssthreshold
-        self.ns.record_window_size(self.flow_id, self.window_size)
+        self.record_window_size()
 
     def send_packets(self, delay=0.0):
         """Method sends as many packets as possible, triggering the
