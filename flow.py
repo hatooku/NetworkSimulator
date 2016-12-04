@@ -95,6 +95,7 @@ class Flow(object):
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
             self.ns.record_window_size(self.flow_id, self.window_size)
+        self.duplicate_counter = 0
 
     def update_timeout_window_size(self):
         """Method that updates window size after a timeout.

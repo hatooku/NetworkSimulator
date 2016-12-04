@@ -37,7 +37,7 @@ class Link(object):
         self.link_buffer = deque()
         # Buffer with destination self.nodes[0], then
         # buffer with destination node[1]
-        self.buffer_sizes = [0.0, 0.0]
+        self.buffer_size = 0.0
         self._packets_in_route = deque()
         self.counter = 0
         
@@ -81,13 +81,6 @@ class Link(object):
     @packets_in_route.setter
     def packets_in_route(self, value):
         raise AttributeError("Current packet should not be changed externally")
-
-    def _get_buffer_size_index(self, destination):
-        if destination == self.nodes[0]:
-            return 0
-        else:
-            assert destination == self.nodes[1]
-            return 1
 
     def _get_other_node(self, node_id):
         """Finds the node that node with id node_id is linked to.
@@ -138,12 +131,11 @@ class Link(object):
         """
 
         destination = self._get_other_node(node_id)
-        buffer_index = self._get_buffer_size_index(destination)
 
-        if self.buffer_sizes[buffer_index] + packet.packet_size <= self.max_buffer_size:
+        if self.buffer_size + packet.packet_size <= self.max_buffer_size:
             self.counter += 1
             self.link_buffer.append((packet, destination))
-            self.buffer_sizes[buffer_index] += packet.packet_size
+            self.buffer_size += packet.packet_size
             
             self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
@@ -184,9 +176,8 @@ class Link(object):
         """
 
         packet, destination = self.link_buffer.popleft()
-        buffer_index = self._get_buffer_size_index(destination)
 
-        self.buffer_sizes[buffer_index] -= packet.packet_size
+        self.buffer_size -= packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
         self._packets_in_route.append((packet, destination))

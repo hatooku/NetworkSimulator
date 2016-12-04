@@ -45,11 +45,11 @@ class FlowReno(Flow):
         if self.fast_recovery:
             self.fast_recovery = False
             self.window_size = math.ceil(self.ssthreshold)
-            self.duplicate_counter = 0
         elif self.slow_start():
             self.window_size += 1.0
         else:
             self.window_size += 1.0 / math.floor(self.window_size)
+        self.duplicate_counter = 0
         self.ns.record_window_size(self.flow_id, self.window_size)
 
     def update_timeout_window_size(self):
@@ -58,7 +58,6 @@ class FlowReno(Flow):
         Sets threshold to half of current window size and retransmits lost packet.
 
         """
-
         Flow.update_timeout_window_size(self)
         self.fast_recovery = False
         self.first_partial_ack = -1
@@ -71,8 +70,8 @@ class FlowReno(Flow):
         Args:
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
+                
         """
-
         rtt = self.ns.cur_time - a_packet.timestamp
         self.ns.record_packet_rtt_time(self.flow_id, rtt)
 
@@ -90,11 +89,10 @@ class FlowReno(Flow):
             self.check_flow_completion()
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
-            if not self.fast_recovery or self.first_unacknowledged == self.first_partial_ack:
-                self.duplicate_counter += 1
+            self.duplicate_counter += 1
             self.send_packets()
 
-            if self.duplicate_counter == 3:
+            if not self.slow_start() and not self.fast_recovery and self.duplicate_counter == 3:
                 self.update_fast_retransmit_window_size()
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
@@ -105,11 +103,12 @@ class FlowReno(Flow):
         Sets threshold to half of current window size and retransmits lost packet.
 
         """
+        assert(self.duplicate_counter == 3)
+
         self.fast_recovery = True
         self.last_partial_ack = max(self.unacknowledged_packets)
         self.first_partial_ack = min(self.unacknowledged_packets)
         self.ssthreshold = max(self.window_size / 2.0, 1)
-        assert(self.duplicate_counter == 3)
         self.window_size = self.ssthreshold
         self.ns.record_window_size(self.flow_id, self.window_size)
 
