@@ -184,9 +184,7 @@ class Router(Node):
         static_cost = link.prop_delay
         
         # how long for all packets in the buffer to complete action on the link
-        prop_cost = link.prop_delay * len(link.link_buffer)
-        trans_cost = link.cur_buffer_size / link.capacity
-        dynamic_cost = prop_cost + trans_cost
+        dynamic_cost = link.prop_delay * len(link.link_buffer)
 
         cost = static_cost + dynamic_cost
 

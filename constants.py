@@ -21,7 +21,7 @@ SEND_DELAY = 10 * MS_TO_S
 
 DEFAULT_NUM_WINDOWS = 500 # number of time windows
 
-REROUTE_PERIOD = 10.0
+REROUTE_PERIOD = 5.0
 
 # The length of time between each window size update in seconds.
 FAST_WINDOW_UPDATE_PERIOD = 20 * MS_TO_S
