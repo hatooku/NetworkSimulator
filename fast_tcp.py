@@ -76,9 +76,7 @@ class FAST_TCP(Flow):
         if packet_id in self.canceled_timeouts:
             self.canceled_timeouts.remove(packet_id)
         if packet_id in self.unacknowledged_packets:
-            self.unacknowledged_packets.remove(packet_id)
-            assert(len(self.unacknowledged_packets) + 1 == int(self.window_size))
-            self.send_packets()
+            self.create_packet(packet_id)
 
     def update_window_size(self):
         """Updates the window size periodically according to the FAST-TCP 
