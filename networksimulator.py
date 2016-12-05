@@ -145,7 +145,7 @@ class NetworkSimulator(object):
     def decrement_active_flows(self):
         self._num_active_flows -= 1
 
-    def populate(self, network_description, flowtype=None):
+    def populate(self, network_description):
         """Populates a new network given a network description in JSON form.
 
         num_active_flows is set to the number of flows.
@@ -204,6 +204,10 @@ class NetworkSimulator(object):
             src = self.nodes[flow["src"]]
             dest = self.nodes[flow["dest"]]
             start_time = float(flow["starting_time"])
+            if "type" in flow:
+                flowtype = flow["type"]
+            else:
+                flowtype = None
 
             self.add_flow(flow_id, src, dest, data_amt, start_time, flowtype)
 
