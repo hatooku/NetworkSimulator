@@ -45,12 +45,11 @@ class FlowReno(Flow):
         if self.fast_recovery:
             self.fast_recovery = False
             self.window_size = math.ceil(self.ssthreshold)
-        elif self.slow_start():
-            self.window_size += 1.0
+            self.duplicate_counter = 0
+            self.record_window_size()
         else:
-            self.window_size += 1.0 / math.floor(self.window_size)
-        self.duplicate_counter = 0
-        self.record_window_size()
+            Flow.update_ack_window_size(self)
+
 
     def update_timeout_window_size(self):
         """Method that updates window size after a timeout.
@@ -62,6 +61,22 @@ class FlowReno(Flow):
         self.fast_recovery = False
         self.first_partial_ack = -1
         self.last_partial_ack = -1
+
+    def update_fast_retransmit_window_size(self):
+        """Method that updates window size during fast retransmit.
+
+        Sets threshold to half of current window size and retransmits lost packet.
+
+        """
+        assert(self.duplicate_counter == 3)
+
+        self.ssthreshold = max(self.window_size / 2.0, 1)
+        self.window_size = self.ssthreshold
+        self.record_window_size()
+
+        self.fast_recovery = True
+        self.last_partial_ack = max(self.unacknowledged_packets)
+        self.first_partial_ack = min(self.unacknowledged_packets)
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
@@ -97,35 +112,8 @@ class FlowReno(Flow):
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
-    def update_fast_retransmit_window_size(self):
-        """Method that updates window size during fast retransmit.
-
-        Sets threshold to half of current window size and retransmits lost packet.
-
-        """
-        assert(self.duplicate_counter == 3)
-
-        self.fast_recovery = True
-        self.last_partial_ack = max(self.unacknowledged_packets)
-        self.first_partial_ack = min(self.unacknowledged_packets)
-        self.ssthreshold = max(self.window_size / 2.0, 1)
-        self.window_size = self.ssthreshold
-        self.record_window_size()
-
-    def send_packets(self, delay=0.0):
-        """Method sends as many packets as possible, triggering the
-        create_packet function.
-
-        delay (float): delay until sending packets. Should only be used for
-            initial send.
-        """
-        cur = self.first_unacknowledged
-
+    def get_effective_window_size(self):
         effective_window_size = self.window_size
         if self.fast_recovery:
             effective_window_size += self.duplicate_counter
-
-        while len(self.unacknowledged_packets) < int(effective_window_size) and cur < self.num_packets:
-            if cur not in self.unacknowledged_packets:
-                self.create_packet(cur, delay)
-            cur += 1
+        return effective_window_size
