@@ -1,7 +1,7 @@
 from networksimulator import NetworkSimulator
 
 ns = NetworkSimulator()
-ns.populate("test1.json", "reno")
+ns.populate("test1_fast.json")
 ns.run(verbose=False)
 
 ns.data_metrics.plot_flow_window_size(window_size=0.1, sliding_window=5)
