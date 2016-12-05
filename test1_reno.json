@@ -110,7 +110,8 @@
                 "src": "H1",
                 "dest": "H2",
                 "data_amt": 20,
-                "starting_time": 0.5
+                "starting_time": 0.5,
+                "type": "reno"
             }
         ]
     }
