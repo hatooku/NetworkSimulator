@@ -197,14 +197,4 @@ class Link(object):
                              self.link_id))
         
         self.ns.record_link_rate(self.link_id, packet.packet_size)
-     len(self.packets_in_route) > 0
-        packet, destination = self._packets_in_route.popleft()
-
-        event = lambda: destination.receive_packet(packet, self.link_id)
-        self.ns.add_event(event, "Node.receive_packet() with node_id = %s, "
-                          "cur_packet = %s, link_id = %s" \
-                          % (destination.node_id, packet.packet_id, 
-                             self.link_id))
-        
-        self.ns.record_link_rate(self.link_id, packet.packet_size)
     
