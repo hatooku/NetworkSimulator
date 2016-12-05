@@ -80,8 +80,10 @@ class FlowReno(Flow):
 
             if self.fast_recovery and self.first_unacknowledged <= self.last_partial_ack:
                 self.create_packet(self.first_unacknowledged)
+                self.canceled_timeouts.append(self.first_unacknowledged)
                 num_cleaned = self.clean_unacknowledged()
                 self.duplicate_counter -= num_cleaned
+
             else:
                 self.update_ack_window_size()
                 self.clean_unacknowledged()
