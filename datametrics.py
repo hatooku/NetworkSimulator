@@ -293,8 +293,8 @@ class DataMetrics(object):
                 all_data = np.array(self.window_size[flow_id])
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    #avg_time, avg_data = self.window_average(time, data)
-                    plt.plot(time, data, '-')
+                    avg_time, avg_data = self.window_average(time, data, 0.1)
+                    plt.plot(avg_time, avg_data, '--', linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -303,16 +303,21 @@ class DataMetrics(object):
         plt.title("Flow Window Size")
         plt.show() 
 
-    def prep_data(self, time, data, num_windows):
+    def prep_data(self, time, data, window_size):
         reshaped_time = []
         reshaped_data = []
-        cur_window = 0
 
         times_in_window = []
         data_in_window = []
 
+        min_time = time[0]
         max_time = time[-1]
-        window_size = max_time / num_windows
+
+        cur_window = min_time
+
+        # plot first point without taking the average.
+        reshaped_time.append(time[0])
+        reshaped_data.append(data[0])
 
         for i in range(len(time)):
             if time[i] > cur_window + window_size:
@@ -332,25 +337,30 @@ class DataMetrics(object):
 
         return reshaped_time, reshaped_data
 
-    def window_average(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
-        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+    # Window_size is in seconds.
+    def window_average(self, time, data, window_size):
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         avg_data = np.array([np.mean(a) for a in reshaped_data])
         return avg_time, avg_data
 
-    def window_sum(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
-        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+    def window_sum(self, time, data, window_size):
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         window_data = np.array([np.sum(a) for a in reshaped_data])
         return avg_time, window_data
 
-    def window_rate(self, time, data, num_windows=DEFAULT_NUM_WINDOWS):
-        reshaped_time, reshaped_data = self.prep_data(time, data, num_windows)
+    def window_rate(self, time, data, window_size):
+        reshaped_time, reshaped_data = self.prep_data(time, data, window_size)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
         
         max_time = time[-1]
-        window_size = 1.0 * max_time / num_windows
         avg_rate = sum_data * 1.0 / window_size
         avg_time = np.array([np.mean(a) for a in reshaped_time])
 
         return avg_time, avg_rate
+
+    def moving_average(self, x, sliding_window_size=10) :
+        arr = np.cumsum(np.array(x) * 1.0, dtype=float)
+        arr[sliding_window_size:] = arr[sliding_window_size:] - arr[:-sliding_window_size]
+        return arr[sliding_window_size - 1:] / sliding_window_size

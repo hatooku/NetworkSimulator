@@ -44,7 +44,6 @@ class Flow(object):
         # Destination
         self.unreceived_packets = [i for i in range(self.num_packets)]
 
-        self.record_window_size()
         self.send_packets(self.start_time)
        
 

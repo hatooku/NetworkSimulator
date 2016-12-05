@@ -17,8 +17,6 @@ ROUT_PACKET_SIZE = 128.0 * BYTE_TO_BIT
 
 TIMEOUT_DELAY = 1000.0 * MS_TO_S
 
-DEFAULT_NUM_WINDOWS = 500 # number of time windows
-
 REROUTE_PERIOD = 5.0
 
 # The length of time between each window size update in seconds.
