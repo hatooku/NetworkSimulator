@@ -1,5 +1,4 @@
 from node import Node
-from host import Host
 from packet import RoutingPacket
 from constants import *
 
@@ -39,7 +38,7 @@ class Router(Node):
             # Add the link to the link dictionary.
             self.links[link.link_id] = link
 
-        # Start routing cycle
+        # Now that we have links, we can start the first routing cycle
         event = lambda: self.start_routing_cycle()
         description = "Router.start_routing_cycle on router %s" % self.node_id
         self.ns.add_event(event, description)
@@ -53,7 +52,6 @@ class Router(Node):
         """
 
         # Use the routing table to send a packet to the right node
-
         link = self.routing_table[packet.dest][0]
 
         event = lambda: link.add_packet(packet, self.node_id)
@@ -75,7 +73,7 @@ class Router(Node):
         # If we get a routing packet, we need to update the routing table
         if isinstance(packet, RoutingPacket):
             self.receive_routing_packet(packet, link_id)
-        else: # We need to send the packet to its dest host
+        else: # We need to send the packet to its destination host
             self.send_packet(packet)
 
     def start_routing_cycle(self):
@@ -161,13 +159,14 @@ class Router(Node):
             # first with respect to the cost (x[1]), and then link_id (x[0]).
             # The link_id is used for consistent tie-breaking.
             link_cost_pairs = self.cost_table[node_id].iteritems()
-            min_link_id, min_cost = min(link_cost_pairs, key=lambda x:(x[1], x[0]))
+            min_link_id, min_cost = \
+                min(link_cost_pairs, key=lambda x:(x[1], x[0]))
             min_link = self.links[min_link_id]
 
             # Compare best link in the cost table with routing table entry
             if node_id not in self.routing_table or \
-               self.routing_table[node_id] != (min_link, min_cost):
-                #print "Changed, t =", self.ns.cur_time
+                self.routing_table[node_id] != (min_link, min_cost):
+                
                 changed = True
                 self.routing_table[node_id] = (min_link, min_cost)
 
@@ -183,12 +182,10 @@ class Router(Node):
 
         static_cost = link.prop_delay
         
-        # how long for all packets in the buffer to complete action on the link
+        # The cost to get all packets in the buffer through the link
         dynamic_cost = link.prop_delay * len(link.link_buffer)
 
-        cost = static_cost + dynamic_cost
-
-        return cost
+        return static_cost + dynamic_cost
 
     def update_adj_link_costs(self):
         """Updates the cost table using the dynamic costs of the router's
@@ -207,14 +204,16 @@ class Router(Node):
             for link_id, link in self.links.iteritems():
                 other_node_id = link.get_other_node_id(self.node_id)
                 self.cost_table[other_node_id] = {}
-                self.cost_table[other_node_id][link_id] = new_link_costs[link_id]
+                self.cost_table[other_node_id][link_id] = \
+                    new_link_costs[link_id]
 
         # Otherwise, update the entire cost table using the difference between
         # the previous adjcent link cost and the new cost.
         else:
             for node_id in self.cost_table:
                 for link_id in self.cost_table[node_id]:
-                    diff = new_link_costs[link_id] - self.adj_link_costs[link_id]
+                    diff = new_link_costs[link_id] \
+                        - self.adj_link_costs[link_id]
                     self.cost_table[node_id][link_id] += diff
 
         # Overwrite the adjacent link cost table with the new costs.
