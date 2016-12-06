@@ -114,6 +114,7 @@ class Flow(object):
 
         """
 
+        assert(self.duplicate_counter == 3)
         self.ssthreshold = max(self.window_size / 2.0, 1)
         self.window_size = 1.0
         self.record_window_size()
@@ -142,9 +143,8 @@ class Flow(object):
         self.ns.record_packet_rtt_time(self.flow_id, rtt)
 
         if a_packet.packet_id > self.first_unacknowledged:
-            self.update_ack_window_size()
             self.first_unacknowledged = a_packet.packet_id
-            self.duplicate_counter = 0
+            self.update_ack_window_size()
             self.clean_unacknowledged()
             self.check_flow_completion()
             self.send_packets()
@@ -152,11 +152,9 @@ class Flow(object):
             self.duplicate_counter += 1
             self.send_packets()
 
-            if self.duplicate_counter == 3:
+            if not self.slow_start() and self.duplicate_counter == 3:
                 self.update_fast_retransmit_window_size()
-                self.unacknowledged_packets.remove(self.first_unacknowledged)
                 self.create_packet(self.first_unacknowledged)
-                assert(self.first_unacknowledged in self.unacknowledged_packets)
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
@@ -183,10 +181,14 @@ class Flow(object):
             initial send.
         """
         cur = self.first_unacknowledged
-        while len(self.unacknowledged_packets) < int(self.window_size) and cur < self.num_packets:
+        effective_window_size = self.get_effective_window_size()
+        while len(self.unacknowledged_packets) < int(effective_window_size) and cur < self.num_packets:
             if cur not in self.unacknowledged_packets:
                 self.create_packet(cur, delay)
             cur += 1
+
+    def get_effective_window_size(self):
+        return self.window_size
 
     def create_packet(self, packet_id, delay=0.0):
         """Method creates packet and then adds them to event queue to be sent

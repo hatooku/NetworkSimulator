@@ -59,7 +59,8 @@ class Host(Node):
             self.ns.record_packet_send(flow_id, packet_id, packet_size)
 
         event = lambda: self._link.add_packet(packet, self.node_id)
-        description = "Link.add_packet() with packet %d from %s" % (packet.packet_id, self.node_id)
+        description = "Link.add_packet() with packet %d from %s" \
+            % (packet.packet_id, self.node_id)
         self.ns.add_event(event, description)
 
     def receive_packet(self, packet, link_id):

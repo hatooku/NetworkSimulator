@@ -15,9 +15,8 @@ class Link(object):
         link_buffer (Deque): stores packets waiting to be sent on this link
         packets_in_route (arr[Packet]): stores all packets being sent on the
                                     link either in transmission or propagation
-        cur_destination (Node): stores the direction of all packets being
+        buffer_size (float): the amount of data waiting in the link buffer
                                 sent on the link
-        is_transmitting (Bool): Keeps track of if a packet is being transmitted
         
     """
 
@@ -35,12 +34,8 @@ class Link(object):
         self.nodes = nodes
         
         self.link_buffer = deque()
-        # Buffer with destination self.nodes[0], then
-        # buffer with destination node[1]
         self.buffer_size = 0.0
         self._packets_in_route = deque()
-        self.counter = 0
-        
         
     @property
     def link_id(self):
@@ -120,9 +115,8 @@ class Link(object):
         """Add a packet to be sent
         
         Puts the packet in the packet buffer to be sent to to the node with the
-        other id. If no other packets are in the buffer and not transmitting,
-        checks if the packet added is eligible to be sent. If it is, calls
-        start_packet_transmission. If the buffer is full, the packet is dropped.
+        other id. If no other packets are in the buffer, sends the packet.
+        If the buffer is full, the packet is dropped.
         
         Args:
             packet (Packet): the packet being sent
@@ -133,7 +127,6 @@ class Link(object):
         destination = self._get_other_node(node_id)
 
         if self.buffer_size + packet.packet_size <= self.max_buffer_size:
-            self.counter += 1
             self.link_buffer.append((packet, destination))
             self.buffer_size += packet.packet_size
             
@@ -149,14 +142,12 @@ class Link(object):
     def start_packet_transmission(self):
         """Transmit a packet into the link
         
-        Takes a packet out of the link buffer to be sent. Starts transmitting
-        the packet. Calls the start_packet_propagation function to start 
-        propagating the packet after the transmission delay. 
+        Starts transmitting the first packet in link buffer. Calls the 
+        start_packet_propagation function to start propagating the packet after
+         the transmission delay. 
             
         """
-
         assert len(self.link_buffer) > 0
-
         packet, destination = self.link_buffer[0]
 
         event = lambda: self.start_packet_propagation()
@@ -169,14 +160,13 @@ class Link(object):
     def start_packet_propagation(self):
         """Begin propagating a packet on the wire
         
-        Starts propagating the packet. If the first packet in the buffer is
-        going in the same direction, call start_packet_transmission.
+        Starts propagating the packet. If there is another packet on the buffer
+        to be sent, calls start_packet_transmission.
         Calls finish_packet_transfer after the propagation delay.
         
         """
 
         packet, destination = self.link_buffer.popleft()
-
         self.buffer_size -= packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
@@ -194,9 +184,7 @@ class Link(object):
         """Hand off the packet to the node it was going to. 
         
         When this method is called, the packet will be transferred to the 
-        correct node. If there is another packet in the buffer that needs to be
-        sent, the start_packet_transmission function will be called and another
-        packet will be sent.
+        correct node. The link records that it sent the data of this packet.
         
         """
         assert len(self.packets_in_route) > 0
