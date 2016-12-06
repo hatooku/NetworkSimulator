@@ -274,6 +274,8 @@ class NetworkSimulator(object):
         self._num_active_flows = 0
         self._event_counter = 0
 
+        self.data_metrics = DataMetrics()
+
     def record_buffer_occupancy(self, link_id, buffer_occupancy):
         """Records a buffer occupancy data point.
 
