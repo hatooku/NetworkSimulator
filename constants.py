@@ -1,4 +1,4 @@
-"""Constants that can be globally accessed."""
+"""Constants that can be globally accessed"""
 
 # Unit conversion constants
 BYTE_TO_BIT = 8.0
@@ -18,13 +18,13 @@ DATA_PACKET_SIZE = 1024.0 * BYTE_TO_BIT
 ACK_PACKET_SIZE = 64.0 * BYTE_TO_BIT
 ROUT_PACKET_SIZE = 128.0 * BYTE_TO_BIT
 
-# How many seconds a flow waits before resending unacknowledged packets.
+# How many seconds a flow waits before resending unacknowledged packets
 TIMEOUT_DELAY = 1000.0 * MS_TO_S
 
-# How often a router dynamically routes in s.
+# How often a router dynamically routes in seconds
 REROUTE_PERIOD = 5.0
 
-# The length of time between each FAST TCP window size update in seconds.
+# The length of time between each FAST TCP window size update in seconds
 FAST_WINDOW_UPDATE_PERIOD = 20 * MS_TO_S
 
 # parameters for FAST TCP window size calculation
