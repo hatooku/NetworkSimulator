@@ -5,27 +5,37 @@ from flow import Flow
 import math
 
 class FlowReno(Flow):
-    """A flow class that represents active connections between
-    hosts and routers.  Implements TCP tahoe congestion control.
+    """A subclass of Flow that represents active connections between
+    hosts and routers, and implements TCP Reno congestion control.
 
     Attributes:
+        fast_recovery (bool): Indicates whether or not the flow has entered
+            fast recovery mode
+        first_partial_ack (int): Packet id of the unacknowledged packet with the
+            smallest id
+        last_partial_ack (int): Packet id of the unacknowledged packet with the
+            largest id
+
+    Inherited Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
         flow_id (string): Unique id identifying the flow
         src (Node): The flow's source node id
         dest (Node): The flow's destination node id
         data_amount (float): Data capacity of the flow (bits)
         start_time (float): Start time in seconds
-        unacknowledged_packets (set): The list of packets with no acknowledgement
-        first_unacknowledged (float): Id of first packet that hasn't been acknowledged
+        unacknowledged_packets (set): The list of packets with no
+            acknowledgement
+        first_unacknowledged (int): The packet id of the first unacknowledged
+            packet (i.e., the next packet expected to be acknowledged)
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
         duplicate_counter (int): Count number of times a duplicate packet is
             received
-        canceled_timeouts (list): Contains packet time outs that need to be
-            cancelled
+        canceled_timeouts (list): Contains packet time outs that need to
+            be canceled
         ssthreshold (float): The slow-start threshold
-        fast_recovery (bool): Indicates whether or not the flow has entered
-            fast recovery mode
+        unreceived_packets (list): List of ids of packets that haven't been
+            received yet
 
     """
 
@@ -37,7 +47,8 @@ class FlowReno(Flow):
         self.last_partial_ack = -1
 
     def update_ack_window_size(self):
-        """Method that updates window size when a packet is acknowledged.
+        """Updates window size when a packet is acknowledged.
+
         If the window size has reached the threshold, congestion avoidance will
         be switched on.
 
@@ -50,11 +61,9 @@ class FlowReno(Flow):
         else:
             Flow.update_ack_window_size(self)
 
-
     def update_timeout_window_size(self):
-        """Method that updates window size after a timeout.
-
-        Sets threshold to half of current window size and retransmits lost packet.
+        """Updates window size, and recorded partial acknowledgement packet ids
+        after a timeout.
 
         """
         Flow.update_timeout_window_size(self)
@@ -63,9 +72,9 @@ class FlowReno(Flow):
         self.last_partial_ack = -1
 
     def update_fast_retransmit_window_size(self):
-        """Method that updates window size during fast retransmit.
-
-        Sets threshold to half of current window size and retransmits lost packet.
+        """Updates window size during fast retransmit. Sets threshold to half of
+        current window size, turns on fast recovery, and records partial
+        acknowledgement packets
 
         """
         assert(self.duplicate_counter == 3)
@@ -80,12 +89,12 @@ class FlowReno(Flow):
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
-        attributes
+        attributes. Also checks for duplicate acknowledgement packets, and flow
+        completion.
 
         Args:
-            a_packet (AcknowledgementPacket): Packet being sent
-                back from host
-                
+            a_packet (AcknowledgementPacket): Packet being sent back from host
+
         """
         rtt = self.ns.cur_time - a_packet.timestamp
         self.ns.record_packet_rtt_time(self.flow_id, rtt)
@@ -93,7 +102,9 @@ class FlowReno(Flow):
         if a_packet.packet_id > self.first_unacknowledged:
             self.first_unacknowledged = a_packet.packet_id
 
-            if self.fast_recovery and self.first_unacknowledged <= self.last_partial_ack:
+            if self.fast_recovery and \
+                self.first_unacknowledged <= self.last_partial_ack:
+
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
                 num_cleaned = self.clean_unacknowledged()
@@ -102,19 +113,25 @@ class FlowReno(Flow):
             else:
                 self.update_ack_window_size()
                 self.clean_unacknowledged()
-            
+
             self.check_flow_completion()
             self.send_packets()
         elif a_packet.packet_id == self.first_unacknowledged:
             self.duplicate_counter += 1
             self.send_packets()
 
-            if not self.slow_start() and not self.fast_recovery and self.duplicate_counter == 3:
+            if not self.slow_start() and not self.fast_recovery and \
+                self.duplicate_counter == 3:
+
                 self.update_fast_retransmit_window_size()
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def get_effective_window_size(self):
+        """Returns the current window size. If fast recovery is on, includes the
+        addition of the current duplicate count.
+        
+        """
         effective_window_size = self.window_size
         if self.fast_recovery:
             effective_window_size += self.duplicate_counter

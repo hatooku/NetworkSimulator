@@ -34,8 +34,8 @@ class Link(object):
         self.nodes = nodes
         
         self.link_buffer = deque()
-        self.buffer_size = 0.0
-        self._packets_in_route = deque()
+        self._buffer_size = 0.0
+        self.packets_in_route = deque()
         
     @property
     def link_id(self):
@@ -70,12 +70,12 @@ class Link(object):
         raise AttributeError("Cannot modify link's capacity")
     
     @property
-    def packets_in_route(self):
-        return self._packets_in_route
+    def buffer_size(self):
+        return self._buffer_size
     
-    @packets_in_route.setter
-    def packets_in_route(self, value):
-        raise AttributeError("Current packet should not be changed externally")
+    @buffer_size.setter
+    def buffer_size(self, value):
+        raise AttributeError("Buffer size should not be changed externally")
 
     def _get_other_node(self, node_id):
         """Finds the node that node with id node_id is linked to.
@@ -128,7 +128,7 @@ class Link(object):
 
         if self.buffer_size + packet.packet_size <= self.max_buffer_size:
             self.link_buffer.append((packet, destination))
-            self.buffer_size += packet.packet_size
+            self._buffer_size += packet.packet_size
             
             self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
@@ -167,10 +167,10 @@ class Link(object):
         """
 
         packet, destination = self.link_buffer.popleft()
-        self.buffer_size -= packet.packet_size
+        self._buffer_size -= packet.packet_size
         self.ns.record_buffer_occupancy(self.link_id, len(self.link_buffer))
 
-        self._packets_in_route.append((packet, destination))
+        self.packets_in_route.append((packet, destination))
        
         event = lambda: self.finish_packet_transfer()
         self.ns.add_event(event, "Link.finish_packet_transfer() with"
@@ -188,7 +188,7 @@ class Link(object):
         
         """
         assert len(self.packets_in_route) > 0
-        packet, destination = self._packets_in_route.popleft()
+        packet, destination = self.packets_in_route.popleft()
 
         event = lambda: destination.receive_packet(packet, self.link_id)
         self.ns.add_event(event, "Node.receive_packet() with node_id = %s, "
