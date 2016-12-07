@@ -77,7 +77,7 @@ class Flow(object):
 
         """
         if self.is_done():
-            self.ns.decrement_active_flows()
+            self.ns.decrement_active_flows(self.flow_id)
 
     def slow_start(self):
         """Returns true if the flow is in slow start phase, and
