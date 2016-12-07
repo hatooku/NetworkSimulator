@@ -164,7 +164,8 @@ class DataMetrics(object):
 
         """
         legend_labels = []
-        for link_id in self.buffer_occupancy:
+        plt.figure(figsize=(30, 9))
+        for link_id in sorted(self.buffer_occupancy):
             if links is None or link_id in links:
                 all_data = np.array(sorted(self.buffer_occupancy[link_id]))
                 if len(all_data) > 0:
@@ -178,10 +179,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Buffer Occupancy (pkts)')
-        plt.title("Buffer Occupancy")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Buffer Occupancy (pkts)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def plot_flow_rate(self, flows=None, window_size=0.1, sliding_window=5):
@@ -195,7 +196,8 @@ class DataMetrics(object):
 
         """
         legend_labels = []
-        for flow_id in self.flow_rate:
+        plt.figure(figsize=(30, 9))
+        for flow_id in sorted(self.flow_rate):
             if flows is None or flow_id in flows:
                 all_data = np.array(sorted(self.flow_rate[flow_id]))
                 if len(all_data) > 0:
@@ -210,10 +212,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Flow Rate (Mbps)')
-        plt.title("Flow Rate")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Flow Rate (Mbps)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def plot_link_rate(self, links=None, window_size=0.1, sliding_window=5):
@@ -228,7 +230,8 @@ class DataMetrics(object):
         """
 
         legend_labels = []
-        for link_id in self.link_rate:
+        plt.figure(figsize=(30, 9))
+        for link_id in sorted(self.link_rate):
             if links is None or link_id in links:
                 all_data = np.array(sorted(self.link_rate[link_id]))
 
@@ -245,10 +248,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Link Rate (Mbps)')
-        plt.title("Link Rate")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Link Rate (Mbps)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def plot_packet_loss(self, links=None, window_size=0.01, sliding_window=10):
@@ -262,7 +265,8 @@ class DataMetrics(object):
 
         """
         legend_labels = []
-        for link_id in self.packet_loss:
+        plt.figure(figsize=(30, 9))
+        for link_id in sorted(self.packet_loss):
             if links is None or link_id in links:
                 all_data = np.array(sorted(self.packet_loss[link_id]))
                 if len(all_data) > 0:
@@ -276,10 +280,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Packet loss (pkts)')
-        plt.title("Packet loss")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Packet loss (pkts)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def plot_flow_packet_delay(self, flows=None, window_size=0.02, \
@@ -295,7 +299,8 @@ class DataMetrics(object):
 
         """
         legend_labels = []
-        for flow_id in self.flow_rate:
+        plt.figure(figsize=(30, 9))
+        for flow_id in sorted(self.flow_rate):
             if flows is None or flow_id in links:
                 all_data = np.array(sorted(self.flow_packet_delay[flow_id]))
                 if len(all_data) > 0:
@@ -310,10 +315,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Packet Delay (ms)')
-        plt.title("Flow Packet Delay")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Packet Delay (ms)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def plot_flow_window_size(self, flows=None, window_size=0.1, \
@@ -328,7 +333,8 @@ class DataMetrics(object):
 
         """
         legend_labels = []
-        for flow_id in self.flow_rate:
+        plt.figure(figsize=(30, 9))
+        for flow_id in sorted(self.flow_rate):
             if flows is None or flow_id in links:
                 all_data = np.array(sorted(self.window_size[flow_id]))
                 if len(all_data) > 0:
@@ -342,10 +348,10 @@ class DataMetrics(object):
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
 
-        plt.legend(legend_labels)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Window Size (packets)')
-        plt.title("Flow Window Size")
+        plt.legend(legend_labels, fontsize=30)
+        plt.xlabel('Time (s)', fontsize=30)
+        plt.ylabel('Window Size (packets)', fontsize=30)
+        plt.tick_params(labelsize=25)
         plt.show()
 
     def prep_data(self, time, data, window_size, zero_fill):
