@@ -153,7 +153,8 @@ class DataMetrics(object):
         self.flow_packet_delay[flow_id].append(data_point)
 
     # Tip: Do window_size = 0.1 for test case 2.
-    def plot_buffer_occupancy(self, links=None, window_size=0.01, sliding_window=10):
+    def plot_buffer_occupancy(self, links=None, window_size=0.01, \
+        sliding_window=10):
         """Plots the buffer occupancy of packets in link buffers.
 
         Args:
@@ -169,11 +170,13 @@ class DataMetrics(object):
                 all_data = np.array(sorted(self.buffer_occupancy[link_id]))
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data, window_size)
+                    avg_time, avg_data = \
+                        self.window_average(time, data, window_size)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_data = self.moving_average(avg_data, sliding_window)
-                    plt.plot(avg_time, avg_data, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_data, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -198,12 +201,14 @@ class DataMetrics(object):
                 all_data = np.array(sorted(self.flow_rate[flow_id]))
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_rate = self.window_rate(time, data, window_size)
+                    avg_time, avg_rate = \
+                        self.window_rate(time, data, window_size)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_rate = self.moving_average(avg_rate, sliding_window)
                     avg_rate *= BIT_TO_MEGABIT
-                    plt.plot(avg_time, avg_rate, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_rate, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -231,12 +236,14 @@ class DataMetrics(object):
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
                     
-                    avg_time, avg_rate = self.window_rate(time, data, window_size)
+                    avg_time, avg_rate = \
+                        self.window_rate(time, data, window_size)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_rate = self.moving_average(avg_rate, sliding_window)
                     avg_rate *= BIT_TO_MEGABIT
-                    plt.plot(avg_time, avg_rate, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_rate, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -261,11 +268,13 @@ class DataMetrics(object):
                 all_data = np.array(sorted(self.packet_loss[link_id]))
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_sum(time, data, window_size)
+                    avg_time, avg_data = \
+                        self.window_sum(time, data, window_size)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_data = self.moving_average(avg_data, sliding_window)
-                    plt.plot(avg_time, avg_data, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_data, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
                     
         plt.legend(legend_labels)
@@ -274,7 +283,8 @@ class DataMetrics(object):
         plt.title("Packet loss")
         plt.show()
 
-    def plot_flow_packet_delay(self, flows=None, window_size=0.01, sliding_window=10):
+    def plot_flow_packet_delay(self, flows=None, window_size=0.01, \
+        sliding_window=10):
         """Plots the round trip time of packets on each of the flows in the 
         simulation.
 
@@ -291,12 +301,14 @@ class DataMetrics(object):
                 all_data = np.array(sorted(self.flow_packet_delay[flow_id]))
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data, window_size, zero_fill=False)
+                    avg_time, avg_data = self.window_average(time, data, \
+                        window_size, zero_fill=False)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_data = self.moving_average(avg_data, sliding_window)
                     avg_data *= S_TO_MS
-                    plt.plot(avg_time, avg_data, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_data, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -305,7 +317,8 @@ class DataMetrics(object):
         plt.title("Flow Packet Delay")
         plt.show()
 
-    def plot_flow_window_size(self, flows=None, window_size=0.1, sliding_window=5):
+    def plot_flow_window_size(self, flows=None, window_size=0.1, \
+        sliding_window=5):
         """Plots the window size of flows in the simulation.
 
         Args:
@@ -321,11 +334,13 @@ class DataMetrics(object):
                 all_data = np.array(sorted(self.window_size[flow_id]))
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    avg_time, avg_data = self.window_average(time, data, window_size)
+                    avg_time, avg_data = \
+                        self.window_average(time, data, window_size)
                     if sliding_window > 1:
                         avg_time = self.moving_average(avg_time, sliding_window)
                         avg_data = self.moving_average(avg_data, sliding_window)
-                    plt.plot(avg_time, avg_data, '--', linewidth=2.0, dashes=(4, 1.5))
+                    plt.plot(avg_time, avg_data, '--', \
+                        linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
                     
         plt.legend(legend_labels)
@@ -394,7 +409,8 @@ class DataMetrics(object):
                 augmented with a data point with value 0.
 
         """
-        reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
+        reshaped_time, reshaped_data = \
+            self.prep_data(time, data, window_size, zero_fill)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         avg_data = np.array([np.mean(a) for a in reshaped_data])
         return avg_time, avg_data
@@ -411,7 +427,8 @@ class DataMetrics(object):
                 augmented with a data point with value 0.
 
         """
-        reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
+        reshaped_time, reshaped_data = \
+            self.prep_data(time, data, window_size, zero_fill)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         window_data = np.array([np.sum(a) for a in reshaped_data])
         return avg_time, window_data
@@ -428,7 +445,8 @@ class DataMetrics(object):
                 augmented with a data point with value 0.
 
         """
-        reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
+        reshaped_time, reshaped_data = \
+            self.prep_data(time, data, window_size, zero_fill)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
         
         max_time = time[-1]
@@ -448,4 +466,5 @@ class DataMetrics(object):
         y = x[1:] # preserve first point
         arr = np.cumsum(np.array(y) * 1.0, dtype=float)
         arr[sliding_window:] = arr[sliding_window:] - arr[:-sliding_window]
-        return np.concatenate((x[:1], arr[sliding_window - 1:] / sliding_window))
+        return np.concatenate((x[:1], \
+            arr[sliding_window - 1:] / sliding_window))
