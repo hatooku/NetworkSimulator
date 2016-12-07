@@ -21,7 +21,7 @@ ROUT_PACKET_SIZE = 128.0 * BYTE_TO_BIT
 # How many seconds a flow waits before resending unacknowledged packets.
 TIMEOUT_DELAY = 1000.0 * MS_TO_S
 
-# How often a router dynamically routes in ms.
+# How often a router dynamically routes in s.
 REROUTE_PERIOD = 5.0
 
 # The length of time between each FAST TCP window size update in seconds.
