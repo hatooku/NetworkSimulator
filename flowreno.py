@@ -24,7 +24,7 @@ class FlowReno(Flow):
         duplicate_counter (int): Count number of times a duplicate packet is
             received
         canceled_timeouts (list): Contains packet time outs that need to
-            be cancelled
+            be canceled
         ssthreshold (float): The slow-start threshold
         unreceived_packets (list): List of ids of packets that haven't been
             received yet
@@ -32,7 +32,7 @@ class FlowReno(Flow):
             fast recovery mode
         first_partial_ack (int): Packet id of the unacknowledged packet with the
             smallest id
-        last_partial_ack (int): Packet id of the unacknowleged packet with the
+        last_partial_ack (int): Packet id of the unacknowledged packet with the
             largest id
 
     """
@@ -46,6 +46,7 @@ class FlowReno(Flow):
 
     def update_ack_window_size(self):
         """Updates window size when a packet is acknowledged.
+
         If the window size has reached the threshold, congestion avoidance will
         be switched on.
 
@@ -69,8 +70,8 @@ class FlowReno(Flow):
         self.last_partial_ack = -1
 
     def update_fast_retransmit_window_size(self):
-        """Updates window size during fast retransmit.  Sets threshold to half
-        of current window size, turns on fast recovery, and records partial
+        """Updates window size during fast retransmit. Sets threshold to half of
+        current window size, turns on fast recovery, and records partial
         acknowledgement packets
 
         """
@@ -86,12 +87,11 @@ class FlowReno(Flow):
 
     def update_flow(self, a_packet):
         """Upon receiving an acknowledgement packet, updates the flow's
-        attributes.  Also checks for duplicate acknowledgement packets, and flow
+        attributes. Also checks for duplicate acknowledgement packets, and flow
         completion.
 
         Args:
-            a_packet (AcknowledgementPacket): Packet being sent
-                back from host
+            a_packet (AcknowledgementPacket): Packet being sent back from host
 
         """
         rtt = self.ns.cur_time - a_packet.timestamp
@@ -123,8 +123,7 @@ class FlowReno(Flow):
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def get_effective_window_size(self):
-        """
-        Returns the current window size.  If fast recovery is on, includes the
+        """Returns the current window size. If fast recovery is on, includes the
         addition of the current duplicate count.
         """
         effective_window_size = self.window_size
