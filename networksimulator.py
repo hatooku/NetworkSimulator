@@ -145,13 +145,17 @@ class NetworkSimulator(object):
         src.add_flow(flow)
         dest.add_flow(flow)
 
-    def decrement_active_flows(self):
+    def decrement_active_flows(self, flow_id):
         """Decrements the number of active flows.
 
         Called when a flow is done sending packets.
 
+        Args:
+            flow_id: the id of the flow that has been completed.
+
         """
         self._num_active_flows -= 1
+        print flow_id, "has completed at time", self.cur_time
 
     def populate(self, network_description):
         """Populates a new network given a network description in JSON form.
