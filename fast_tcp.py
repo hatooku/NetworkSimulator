@@ -5,13 +5,7 @@ class FAST_TCP(Flow):
     """A flow class that represents active connections between
     hosts and routers.
 
-    Attributes:
-        ns (NetworkSimulator): Instance of the NetworkSimulator class
-        flow_id (string): Unique id identifying the flow
-        src (Node): The flow's source node id
-        dest (Node): The flow's destination node id
-        data_amount (float): Data capacity of the flow (bits)
-
+    Attributes: 
         gamma (float): A constant used to update the window size
         alpha (float): A constant used to update the window size
         last_rtt (float): The round trip time of the last acknowledged packet
@@ -19,11 +13,20 @@ class FAST_TCP(Flow):
                            packets
 
     Inherited Attributes:
+        ns (NetworkSimulator): Instance of the NetworkSimulator class
+        flow_id (string): Unique id identifying the flow
+        src (Node): The flow's source node id
+        dest (Node): The flow's destination node id
+        data_amount (float): Data capacity of the flow (bits)
         start_time (float): Start time in seconds
         unacknowledged_packets (set): The list of packets with no 
             acknowledgement 
+        first_unacknowledged (int): The packet id of the first unacknowledged
+            packet (i.e., the next packet expected to be acknowledged)
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
+        canceled_timeouts (list): Contains packet time outs that need to
+            be canceled
 
     """
 

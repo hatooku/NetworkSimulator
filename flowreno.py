@@ -9,6 +9,14 @@ class FlowReno(Flow):
     hosts and routers, and implements TCP Reno congestion control.
 
     Attributes:
+        fast_recovery (bool): Indicates whether or not the flow has entered
+            fast recovery mode
+        first_partial_ack (int): Packet id of the unacknowledged packet with the
+            smallest id
+        last_partial_ack (int): Packet id of the unacknowledged packet with the
+            largest id
+
+    Inherited Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
         flow_id (string): Unique id identifying the flow
         src (Node): The flow's source node id
@@ -28,12 +36,6 @@ class FlowReno(Flow):
         ssthreshold (float): The slow-start threshold
         unreceived_packets (list): List of ids of packets that haven't been
             received yet
-        fast_recovery (bool): Indicates whether or not the flow has entered
-            fast recovery mode
-        first_partial_ack (int): Packet id of the unacknowledged packet with the
-            smallest id
-        last_partial_ack (int): Packet id of the unacknowledged packet with the
-            largest id
 
     """
 
@@ -99,8 +101,10 @@ class FlowReno(Flow):
 
         if a_packet.packet_id > self.first_unacknowledged:
             self.first_unacknowledged = a_packet.packet_id
+
             if self.fast_recovery and \
                 self.first_unacknowledged <= self.last_partial_ack:
+
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
                 num_cleaned = self.clean_unacknowledged()
@@ -118,6 +122,7 @@ class FlowReno(Flow):
 
             if not self.slow_start() and not self.fast_recovery and \
                 self.duplicate_counter == 3:
+
                 self.update_fast_retransmit_window_size()
                 self.create_packet(self.first_unacknowledged)
                 self.canceled_timeouts.append(self.first_unacknowledged)
@@ -125,6 +130,7 @@ class FlowReno(Flow):
     def get_effective_window_size(self):
         """Returns the current window size. If fast recovery is on, includes the
         addition of the current duplicate count.
+        
         """
         effective_window_size = self.window_size
         if self.fast_recovery:
