@@ -136,7 +136,7 @@ class DataMetrics(object):
             self.window_size[flow_id].pop()
         data_point = (time, prev_window_size + window_size)
         self.window_size[flow_id].append(data_point)
-    
+
     def record_flow_packet_delay(self, flow_id, packet_delay, time):
         """Records the roundtrip time for a packet in a flow.
 
@@ -177,7 +177,7 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_data, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Buffer Occupancy (pkts)')
@@ -209,7 +209,7 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_rate, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Flow Rate (Mbps)')
@@ -234,7 +234,7 @@ class DataMetrics(object):
 
                 if len(all_data) > 0:
                     time, data = np.array(zip(*all_data))
-                    
+
                     avg_time, avg_rate = \
                         self.window_rate(time, data, window_size)
                     if sliding_window > 1:
@@ -244,7 +244,7 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_rate, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Link Rate (Mbps)')
@@ -255,7 +255,7 @@ class DataMetrics(object):
         """Plots the packet loss on each link in the simulation.
 
         Args:
-            links (arr[Link]): if links is given, only the packets on links in 
+            links (arr[Link]): if links is given, only the packets on links in
             the array will be plotted.
             window_size (float): The window size of the graph in seconds.
             sliding_window (int): Number of points in each sliding window.
@@ -275,7 +275,7 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_data, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(link_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Packet loss (pkts)')
@@ -284,7 +284,7 @@ class DataMetrics(object):
 
     def plot_flow_packet_delay(self, flows=None, window_size=0.02, \
         sliding_window=10):
-        """Plots the round trip time of packets on each of the flows in the 
+        """Plots the round trip time of packets on each of the flows in the
         simulation.
 
         Args:
@@ -309,7 +309,7 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_data, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Packet Delay (ms)')
@@ -341,16 +341,16 @@ class DataMetrics(object):
                     plt.plot(avg_time, avg_data, '--', \
                         linewidth=2.0, dashes=(4, 1.5))
                     legend_labels.append(flow_id)
-                    
+
         plt.legend(legend_labels)
         plt.xlabel('Time (s)')
         plt.ylabel('Window Size (packets)')
         plt.title("Flow Window Size")
-        plt.show() 
+        plt.show()
 
     def prep_data(self, time, data, window_size, zero_fill):
         """ Prep the time and data arrays such that each row of the resulting
-        arrays represent all the points in each window.
+        arrays represents all the points in each window.
 
         Args:
             time (arr): the time array of the data.
@@ -381,7 +381,7 @@ class DataMetrics(object):
                 if len(data_in_window) == 0 and zero_fill:
                     times_in_window.append(cur_window - window_size / 2)
                     data_in_window.append(0)
-                
+
                 if len(data_in_window) > 0:
                     reshaped_time.append(times_in_window)
                     reshaped_data.append(data_in_window)
@@ -447,7 +447,7 @@ class DataMetrics(object):
         reshaped_time, reshaped_data = \
             self.prep_data(time, data, window_size, zero_fill)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
-        
+
         max_time = time[-1]
         avg_rate = sum_data * 1.0 / window_size
         avg_time = np.array([np.mean(a) for a in reshaped_time])
