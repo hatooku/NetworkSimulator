@@ -15,7 +15,8 @@ class FAST_TCP(Flow):
         gamma (float): A constant used to update the window size
         alpha (float): A constant used to update the window size
         last_rtt (float): The round trip time of the last acknowledged packet
-        base_rtt (float): The shortest round trip time of all acknowledge packets
+        base_rtt (float): The shortest round trip time of all acknowledged
+                           packets
 
     Inherited Attributes:
         start_time (float): Start time in seconds
@@ -76,7 +77,7 @@ class FAST_TCP(Flow):
         of time, packet is considered lost.  Packet is then resent.
 
         Args:
-            packet_id (int): packet_id of packet being added to timed_out_packets
+            packet_id (int): packet_id of packet checking if timed out.
                                     
         """
         if packet_id in self.canceled_timeouts:
