@@ -28,7 +28,7 @@ To run with a custom JSON, the following commands can be used:
 >>> ns.data_metrics.plot_flow_packet_delay()
 ```
 
-These plot methods can each given optional parameters that are specified in the report.
+These plot methods can each be given optional parameters that are specified in the report.
 The JSON file should contain a network object with attributes "hosts", "links", and "flows".
 The network object may or may not also include a "routers" attribute.
 The details for these objects are further specified in the report.
