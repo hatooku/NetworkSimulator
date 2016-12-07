@@ -70,7 +70,8 @@ class Router(Node):
 
         """
 
-        # If we get a routing packet, we need to update the routing table
+        # If we get a routing packet, we need to check if we should update the 
+        # routing table
         if isinstance(packet, RoutingPacket):
             self.receive_routing_packet(packet, link_id)
         else: # We need to send the packet to its destination host
@@ -108,7 +109,7 @@ class Router(Node):
             self.ns.add_event(event, description)
 
     def receive_routing_packet(self, routing_packet, adj_link_id):
-        """Receives a routing packet and updates the routing table.
+        """Receives a routing packet and updates the routing table if necessary.
 
         Args:
             routing_packet (Packet): The routing packet we received.
@@ -208,7 +209,7 @@ class Router(Node):
                     new_link_costs[link_id]
 
         # Otherwise, update the entire cost table using the difference between
-        # the previous adjcent link cost and the new cost.
+        # the previous adjacent link cost and the new cost.
         else:
             for node_id in self.cost_table:
                 for link_id in self.cost_table[node_id]:

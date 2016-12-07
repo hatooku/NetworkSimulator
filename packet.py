@@ -1,11 +1,11 @@
 from constants import *
 
 class Packet(object):
-    """A packet class that represents a data packet being sent from
-        a source to a destination
+    """A packet class that represents a packet being sent from a source to a 
+    destination.
 
     Attributes:
-        packet_id (int): Unique id identifying the packet
+        packet_id (int): An id identifying the packet
         src (string): The flow's source node id
         dest (string): The flow's destination node id
         packet_size (float): The packet's size in bits
@@ -78,18 +78,19 @@ class DataPacket(Packet):
         src (string): The flow's source node id
         dest (string): The flow's destination node id
         flow_id (string): Unique id indicating flow
-        data (string): Data string being stored in the packet in bits
+        data (string): Data string being stored in the packet
     """
 
     def __init__(self, packet_id, src, dest, flow_id, timestamp, data=""):
-        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id, timestamp)
+        Packet.__init__(self, packet_id, src, dest, DATA_PACKET_SIZE, flow_id, \
+            timestamp)
         self.data = data
 
 class RoutingPacket(Packet):
     """A class that will represent routing table packets.
 
     Attributes:
-        packet_id (string): Unique id identifying the packet
+        packet_id (string): An id identifying the packet
         src (string): The flow's source node id
         dest (string): The flow's destination node id
         flow_id (string): Unique id indicating flow
@@ -97,7 +98,8 @@ class RoutingPacket(Packet):
     """
 
     def __init__(self, packet_id, src, dest, flow_id, routing_table, timestamp):
-        Packet.__init__(self, packet_id, src, dest, ROUT_PACKET_SIZE, flow_id, timestamp)
+        Packet.__init__(self, packet_id, src, dest, ROUT_PACKET_SIZE, flow_id, \
+            timestamp)
         self.routing_table = routing_table
 
 class AcknowledgementPacket(Packet):
@@ -111,7 +113,8 @@ class AcknowledgementPacket(Packet):
     """
 
     def __init__(self, packet_id, src, dest, flow_id, timestamp):
-        Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id, timestamp)
+        Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id, \
+            timestamp)
 
 
 
