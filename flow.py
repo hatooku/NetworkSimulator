@@ -5,7 +5,7 @@ import math
 
 class Flow(object):
     """A flow class that represents active connections between
-    hosts and routers.  Implements TCP tahoe congestion control.
+    hosts and routers.  Implements TCP Tahoe congestion control.
 
     Attributes:
         ns (NetworkSimulator): Instance of the NetworkSimulator class
@@ -23,7 +23,7 @@ class Flow(object):
         duplicate_counter (int): Count number of times a duplicate packet is
             received
         canceled_timeouts (list): Contains packet time outs that need to
-            be cancelled
+            be canceled
         ssthreshold (float): The slow-start threshold
         unreceived_packets (list): List of ids of packets that haven't been
             received yet
@@ -72,8 +72,8 @@ class Flow(object):
         raise AttributeError("Cannot modify a flow's destination node id.")
 
     def check_flow_completion(self):
-        """Checks if all packets have been acknowledged and
-        updates the NetworkSimulator object accordingly.
+        """Checks if all packets have been acknowledged and updates the 
+        NetworkSimulator object accordingly.
 
         """
         if self.is_done():
@@ -88,6 +88,7 @@ class Flow(object):
 
     def update_ack_window_size(self):
         """Updates window size when a packet is acknowledged.
+
         If the window size has reached the threshold, congestion avoidance will
         be switched on.
 
@@ -101,9 +102,8 @@ class Flow(object):
         self.record_window_size()
 
     def update_timeout_window_size(self):
-        """After a timeout, sets the ssthreshold to half of the
-        window size, sets window size back to 1, and resets the duplicate
-        counter.
+        """After a timeout, sets the ssthreshold to half of the window size, 
+        sets window size back to 1, and resets the duplicate counter.
 
         """
         self.ssthreshold = max(self.window_size / 2.0, 1)
@@ -112,8 +112,8 @@ class Flow(object):
         self.record_window_size()
 
     def update_fast_retransmit_window_size(self):
-        """During fast retransmit, sets threshold to half of the
-        window size, and sets window size back to 1.
+        """During fast retransmit, sets threshold to half of the window size, 
+        and sets window size back to 1.
 
         """
         assert(self.duplicate_counter == 3)
@@ -122,8 +122,9 @@ class Flow(object):
         self.record_window_size()
 
     def clean_unacknowledged(self):
-        """Cleans up unacknowledged packet array by removing
-        all packets with ids preceding the first unacknowledged packet.
+        """Cleans up unacknowledged packet array by removing all packets with 
+        ids preceding the first unacknowledged packet.
+
         Returns the number of packets removed.
 
         """
@@ -162,12 +163,12 @@ class Flow(object):
                 self.canceled_timeouts.append(self.first_unacknowledged)
 
     def time_out(self, packet_id):
-        """If sent packet is still unacknowledged after a period of time,
-        packet is considered lost.  Packet is then resent and window size is
-        updated.
+        """If sent packet is still unacknowledged after a period of time, packet
+        is considered lost. Packet is then resent and window size is updated.
 
         Args:
-            packet_id (int): packet_id of packet being added to timed_out_packets
+            packet_id (int): packet_id of packet being added to 
+                timed_out_packets
 
         """
         if packet_id in self.canceled_timeouts:
@@ -178,8 +179,8 @@ class Flow(object):
             self.send_packets()
 
     def send_packets(self, delay=0.0):
-        """Sends as many packets as possible, triggering the
-        create_packet function.
+        """Sends as many packets as possible, triggering the create_packet 
+        function.
 
         delay (float): delay until sending packets. Should only be used for
             initial send.
@@ -196,8 +197,8 @@ class Flow(object):
         return self.window_size
 
     def create_packet(self, packet_id, delay=0.0):
-        """Creates packet and then adds it to event queue to be sent
-        to the host, along with a timing event to ensure that they are resent if
+        """Creates packet and then adds it to event queue to be sent to the 
+        host, along with a timing event to ensure that they are resent if
         unacknowledged.
 
         Args:
@@ -224,7 +225,7 @@ class Flow(object):
 
     def make_acknowledgement_packet(self, timestamp):
         """Method makes the AcknowledgementPacket and triggers the send_packet
-        method for the host if applicable
+        method for the host if applicable.
 
         Args:
             timestamp (float): time the packet to be acknowledged was sent
@@ -246,11 +247,11 @@ class Flow(object):
         self.ns.add_event(event, event_message)
 
     def receive_packet(self, packet):
-        """Receives a given packet.  If it's a data packet, sends an
-        acknowledgement packet.  If it's an acknowledgement packet, updates
-        the flow.
+        """Receives a given packet. If it's a data packet, sends an 
+        acknowledgement packet. If it's an acknowledgement packet, updates the 
+        flow.
 
-        args:
+        Args:
             packet (Packet): packet object being received
 
         """
