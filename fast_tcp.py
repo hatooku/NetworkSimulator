@@ -14,13 +14,13 @@ class FAST_TCP(Flow):
 
         gamma (float): A constant used to update the window size
         alpha (float): A constant used to update the window size
-        last_rtt (float): The roundtrip time of the last acknowledged packet
-        base_rtt (float): The shortest roundtrip time of all acknowledge packets
+        last_rtt (float): The round trip time of the last acknowledged packet
+        base_rtt (float): The shortest round trip time of all acknowledge packets
 
     Inherited Attributes:
         start_time (float): Start time in seconds
         unacknowledged_packets (set): The list of packets with no 
-            acknowledgement
+            acknowledgement 
         num_packets (float):  Number of packets to be sent through the flow
         window_size (float): The size of the window
 
@@ -59,7 +59,7 @@ class FAST_TCP(Flow):
             a_packet (AcknowledgementPacket): Packet being sent
                 back from host
         """
-        # Calculate the roundtrip time of the packet being acknowledged.
+        # Calculate the round trip time of the packet being acknowledged.
         rtt = self.ns.cur_time - a_packet.timestamp
         self.last_rtt = rtt
         self.base_rtt = min(self.base_rtt, rtt)
@@ -67,15 +67,21 @@ class FAST_TCP(Flow):
 
         if a_packet.packet_id > self.first_unacknowledged:
             self.first_unacknowledged = a_packet.packet_id
-            #self.duplicate_counter = 0
             self.clean_unacknowledged()
             self.check_flow_completion()
             self.send_packets()
 
     def time_out(self, packet_id):
+        """Method where, if sent packet is still unacknowledged after a period
+        of time, packet is considered lost.  Packet is then resent.
+
+        Args:
+            packet_id (int): packet_id of packet being added to timed_out_packets
+                                    
+        """
         if packet_id in self.canceled_timeouts:
             self.canceled_timeouts.remove(packet_id)
-        if packet_id in self.unacknowledged_packets:
+        elif packet_id in self.unacknowledged_packets:
             self.create_packet(packet_id)
 
     def update_window_size(self):
@@ -83,7 +89,6 @@ class FAST_TCP(Flow):
         algorithm.
 
         """
-       
         if self.last_rtt < float('inf'):
             self.window_size = min(2 * self.window_size, \
                 (1 - self.gamma) * self.window_size + \
