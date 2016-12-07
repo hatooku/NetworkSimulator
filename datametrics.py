@@ -159,6 +159,8 @@ class DataMetrics(object):
         Args:
             links (arr[Link]): if links is given, only the links in the array
             will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
         legend_labels = []
@@ -186,6 +188,8 @@ class DataMetrics(object):
         Args:
             flows (arr[Flow]): if flows is given, only the flows in the array
             will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
         legend_labels = []
@@ -214,6 +218,8 @@ class DataMetrics(object):
         Args:
             links (arr[Link]): if links is given, only the links in the array
             will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
 
@@ -245,6 +251,8 @@ class DataMetrics(object):
         Args:
             links (arr[Link]): if links is given, only the packets on links in 
             the array will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
         legend_labels = []
@@ -273,6 +281,8 @@ class DataMetrics(object):
         Args:
             flows (arr[Flow]): if flows is given, only the flows in the array
             will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
         legend_labels = []
@@ -301,6 +311,8 @@ class DataMetrics(object):
         Args:
             flows (arr[Flow]): if flows is given, only the flows in the array
             will be plotted.
+            window_size (float): The window size of the graph in seconds.
+            sliding_window (int): Number of points in each sliding window.
 
         """
         legend_labels = []
@@ -323,6 +335,17 @@ class DataMetrics(object):
         plt.show() 
 
     def prep_data(self, time, data, window_size, zero_fill):
+        """ Prep the time and data arrays such that each row of the resulting
+        arrays represent all the points in each window.
+
+        Args:
+            time (arr): the time array of the data.
+            data (arr): the data array.
+            window_size (float): the window size of the graph in seconds.
+            zero_fill (bool): if true, windows with no data points will be
+                augmented with a data point with value 0.
+
+        """
         reshaped_time = []
         reshaped_data = []
 
@@ -359,20 +382,52 @@ class DataMetrics(object):
 
         return reshaped_time, reshaped_data
 
-    # Window_size is in seconds.
     def window_average(self, time, data, window_size, zero_fill=True):
+        """Transforms the time and data arrays into averages over each
+        window.
+
+        Args:
+            time (arr): the time array of the data.
+            data (arr): the data array
+            window_size (float): the window size of the graph in seconds.
+            zero_fill (bool): if true, windows with no data points will be
+                augmented with a data point with value 0.
+
+        """
         reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         avg_data = np.array([np.mean(a) for a in reshaped_data])
         return avg_time, avg_data
 
     def window_sum(self, time, data, window_size, zero_fill=True):
+        """Transforms the time and data arrays into sums over each
+        window.
+
+        Args:
+            time (arr): the time array of the data.
+            data (arr): the data array
+            window_size (float): the window size of the graph in seconds.
+            zero_fill (bool): if true, windows with no data points will be
+                augmented with a data point with value 0.
+
+        """
         reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
         avg_time = np.array([np.mean(a) for a in reshaped_time])
         window_data = np.array([np.sum(a) for a in reshaped_data])
         return avg_time, window_data
 
     def window_rate(self, time, data, window_size, zero_fill=True):
+        """Transforms the time and data arrays into rates (sums over change
+        in time) over each window.
+
+        Args:
+            time (arr): the time array of the data.
+            data (arr): the data array
+            window_size (float): the window size of the graph in seconds.
+            zero_fill (bool): if true, windows with no data points will be
+                augmented with a data point with value 0.
+
+        """
         reshaped_time, reshaped_data = self.prep_data(time, data, window_size, zero_fill)
         sum_data = np.array([np.sum(a) for a in reshaped_data])
         
@@ -383,6 +438,13 @@ class DataMetrics(object):
         return avg_time, avg_rate
 
     def moving_average(self, x, sliding_window=10):
+        """Transforms the data into moving averages over the specified sliding
+        windows.
+
+        Args:
+            x (arr): the input array
+            sliding_window (int): the size of the sliding windows.
+        """
         y = x[1:] # preserve first point
         arr = np.cumsum(np.array(y) * 1.0, dtype=float)
         arr[sliding_window:] = arr[sliding_window:] - arr[:-sliding_window]
