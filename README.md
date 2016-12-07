@@ -4,9 +4,13 @@ CS 143 Project
 To quickly run a simulation, use one of the testscripts provided using the command:
 python testscript_name.py
 
-i.e. python test0_fast.py, python test0_reno.py, ....
+i.e. 
+``` python
+>>> python test0_fast.py
+>>> python test0_reno.py
+```
 
-test scripts are provided for all 3 test cases using both types of flows.
+Test scripts are provided for all 3 test cases using both types of flows.
 
 To run with a custom JSON, the following commands can be used:
 ``` python 
