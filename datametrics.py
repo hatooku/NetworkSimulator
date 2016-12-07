@@ -136,7 +136,6 @@ class DataMetrics(object):
             self.window_size[flow_id].pop()
         data_point = (time, prev_window_size + window_size)
         self.window_size[flow_id].append(data_point)
-
     
     def record_flow_packet_delay(self, flow_id, packet_delay, time):
         """Records the roundtrip time for a packet in a flow.
@@ -153,7 +152,7 @@ class DataMetrics(object):
         self.flow_packet_delay[flow_id].append(data_point)
 
     # Tip: Do window_size = 0.1 for test case 2.
-    def plot_buffer_occupancy(self, links=None, window_size=0.01, \
+    def plot_buffer_occupancy(self, links=None, window_size=0.1, \
         sliding_window=10):
         """Plots the buffer occupancy of packets in link buffers.
 
@@ -283,7 +282,7 @@ class DataMetrics(object):
         plt.title("Packet loss")
         plt.show()
 
-    def plot_flow_packet_delay(self, flows=None, window_size=0.01, \
+    def plot_flow_packet_delay(self, flows=None, window_size=0.02, \
         sliding_window=10):
         """Plots the round trip time of packets on each of the flows in the 
         simulation.
