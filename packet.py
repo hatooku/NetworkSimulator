@@ -115,7 +115,3 @@ class AcknowledgementPacket(Packet):
     def __init__(self, packet_id, src, dest, flow_id, timestamp):
         Packet.__init__(self, packet_id, src, dest, ACK_PACKET_SIZE, flow_id, \
             timestamp)
-
-
-
-    
