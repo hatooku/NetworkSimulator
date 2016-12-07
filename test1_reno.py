@@ -1,7 +1,7 @@
-from networksimulator import NetworkSimulator
+from src import *
 
 ns = NetworkSimulator()
-ns.populate("test1_reno.json")
+ns.populate("network_descriptions/test1_reno.json")
 ns.run(verbose=False)
 
 ns.data_metrics.plot_link_rate(["L1", "L2"])
